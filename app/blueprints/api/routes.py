@@ -36,7 +36,7 @@ def upload():
     # Extract filename and extension
     filename, ext = os.path.splitext(original_filename)
 
-    if ext in allowed_extensions is False:
+    if not ext in allowed_extensions:
         return abort(400, 'Invalid file extension!')
 
     # Filenames
