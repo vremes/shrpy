@@ -1,7 +1,7 @@
 # flask-sharex
 Minimal [ShareX](https://getsharex.com/) custom uploader written in Python (Flask).
 
-ShareX custom uploader configuration is at `/api/sharex` route.
+ShareX custom uploader configuration is available at `/api/sharex` route.
 
 # Setup
 1. Install requirements: `pip3 install -r requirements.txt`
