@@ -1,4 +1,7 @@
 import os
+import hmac
+import hashlib
+import base64
 from uuid import uuid4
 from flask import Blueprint, request, abort, current_app, jsonify, url_for
 
@@ -13,7 +16,8 @@ def sharex():
         "RequestURL": url_for('api.upload', _external=True),
         "Body": "MultipartFormData",
         "FileFormName": "file",
-        "URL": "$json:url$"
+        "URL": "$json:url$",
+        "DeletionURL": "$json:delete_url$"
     }
 
     return jsonify(response_dict)
@@ -47,9 +51,35 @@ def upload():
     # Save file
     uploaded_file.save(save_directory)
 
+    # HMAC magic for deletion url
+    secret_key = current_app.secret_key
+    hmac_data = full_filename
+
+    # Generate HMAC using Flask's secret key and filename
+    signature = hmac.new(secret_key.encode('utf-8'), full_filename.encode('utf-8'), hashlib.sha256).hexdigest()
+
     return jsonify(
             {
                 'filename': full_filename, 
-                'url': url_for('main.uploads', filename=full_filename, _external=True)
+                'url': url_for('main.uploads', filename=full_filename, _external=True),
+                'delete_url': url_for('api.delete_file', signature=signature, filename=full_filename, _external=True)
             }
         )
+
+@api.route('/delete-file/<signature>/<filename>')
+def delete_file(signature, filename):
+    secret_key = current_app.secret_key
+    hmac_signature = hmac.new(secret_key.encode('utf-8'), filename.encode('utf-8'), hashlib.sha256).hexdigest()
+
+    if hmac_signature != signature:
+        return abort(404)
+
+    file_path = os.path.join(current_app.config['UPLOAD_DIR'], filename)
+    
+    if os.path.isfile(file_path) is False:
+        return abort(404)
+
+    os.remove(file_path)
+
+    response_txt = '{} has been deleted.'.format(filename)
+    return response_txt
