@@ -1,7 +1,6 @@
 import os
 import hmac
 import hashlib
-import base64
 from uuid import uuid4
 from flask import Blueprint, request, abort, current_app, jsonify, url_for
 
