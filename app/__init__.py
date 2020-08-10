@@ -11,7 +11,7 @@ def create_app():
     app.config['UPLOAD_DIR'] = os.path.join(app.root_path, 'uploads')
 
     # Allowed file extensions
-    app.config['ALLOWED_EXTENSIONS'] = ['.png', '.jpg', '.jpeg', '.gif', '.webm', '.mp4']
+    app.config['ALLOWED_EXTENSIONS'] = ['.png', '.jpg', '.jpeg', '.gif', '.webm', '.mp4', '.webp']
 
     # Import blueprints
     from app.blueprints.api.routes import api
