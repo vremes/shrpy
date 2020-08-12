@@ -11,6 +11,7 @@ ShareX custom uploader configuration is available at `/api/sharex` route.
 ## Example NGINX config
 ```nginx
 server {
+    listen 80;
     server_name mydomain.com;
     client_max_body_size 16M;
 
