@@ -2,7 +2,7 @@ import os
 import hmac
 import hashlib
 from uuid import uuid4
-from flask import Blueprint, request, abort, current_app, jsonify, url_for
+from flask import Blueprint, request, abort, current_app, jsonify, url_for, render_template_string
 
 api = Blueprint('api', __name__)
 
@@ -80,5 +80,6 @@ def delete_file(signature, filename):
 
     os.remove(file_path)
 
-    response_txt = '{} has been deleted.'.format(filename)
+    response_txt = render_template_string('{{ filename }} has been deleted.', filename=filename)
+    
     return response_txt
