@@ -2,6 +2,7 @@ import os
 import hmac
 import hashlib
 from uuid import uuid4
+from werkzeug.utils import secure_filename
 from flask import Blueprint, request, abort, current_app, jsonify, url_for, render_template_string
 
 api = Blueprint('api', __name__)
@@ -43,7 +44,8 @@ def upload():
         return abort(400, 'Invalid file extension!')
 
     # Filenames
-    new_filename = uuid4().hex
+    secure_original_filename = secure_filename(filename) # Secure version of the file's original filename
+    new_filename = '{}-{}'.format(uuid4().hex, secure_original_filename) # Server generated filename + secure original filename
     full_filename = '{}{}'.format(new_filename, ext)
     save_directory = os.path.join(upload_directory, full_filename)
 
@@ -51,11 +53,11 @@ def upload():
     uploaded_file.save(save_directory)
 
     # HMAC magic for deletion url
-    secret_key = current_app.secret_key
-    hmac_data = full_filename
+    secret_key = current_app.secret_key.encode('utf-8')
+    hmac_data = full_filename.encode('utf-8')
 
     # Generate HMAC using Flask's secret key and filename
-    signature = hmac.new(secret_key.encode('utf-8'), full_filename.encode('utf-8'), hashlib.sha256).hexdigest()
+    signature = hmac.new(secret_key, hmac_data, hashlib.sha256).hexdigest()
 
     return jsonify(
             {
@@ -67,8 +69,10 @@ def upload():
 
 @api.route('/delete-file/<signature>/<filename>')
 def delete_file(signature, filename):
-    secret_key = current_app.secret_key
-    hmac_signature = hmac.new(secret_key.encode('utf-8'), filename.encode('utf-8'), hashlib.sha256).hexdigest()
+    secret_key = current_app.secret_key.encode('utf-8')
+    hmac_data = filename.encode('utf-8')
+
+    hmac_signature = hmac.new(secret_key, hmac_data, hashlib.sha256).hexdigest()
 
     if hmac_signature != signature:
         return abort(404)
