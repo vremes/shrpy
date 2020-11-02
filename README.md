@@ -2,6 +2,8 @@ Minimal [ShareX](https://getsharex.com/) custom uploader written in Python (Flas
 
 ShareX custom uploader configuration is available at `/api/sharex` route.
 
+I created this mostly for my personal use, but if you have any suggestions, ideas or improvements feel free to submit a new issue!
+
 # Setup
 1. Install requirements: `pip3 install -r requirements.txt`
 2. Set `FLASK_SECRET` OS environment variable to something super secret
@@ -21,19 +23,19 @@ server {
     }
 
     location /uploads {
-        alias /var/www/flask-sharex-server/app/uploads/;
+        alias /var/www/shrpy/app/uploads/;
     }
 }
 ```
 ## Example [Supervisord](http://supervisord.org/) config
 ```config
-[program:flask-sharex-server]
-directory=/var/www/flask-sharex-server
+[program:shrpy]
+directory=/var/www/shrpy
 command=gunicorn --bind=127.0.0.1:8000 wsgi:application
 autostart=true
 autorestart=true
-stderr_logfile=/var/log/flask-sharex-server.err.log
-stdout_logfile=/var/log/flask-sharex-server.out.log
+stderr_logfile=/var/log/shrpy.err.log
+stdout_logfile=/var/log/shrpy.out.log
 environment=FLASK_SECRET=""
 
 ```
