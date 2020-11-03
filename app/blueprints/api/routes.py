@@ -86,7 +86,7 @@ def delete_file(signature, filename):
 
     hmac_signature = hmac.new(secret_key, hmac_data, hashlib.sha256).hexdigest()
 
-    if hmac_signature != signature:
+    if hmac.compare_digest(hmac_signature, signature) is False:
         return abort(404)
 
     file_path = os.path.join(current_app.config['UPLOAD_DIR'], filename)
