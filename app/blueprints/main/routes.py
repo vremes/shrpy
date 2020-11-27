@@ -1,4 +1,4 @@
-from flask import Blueprint, send_from_directory, current_app, request
+from flask import Blueprint, send_from_directory, current_app
 
 main = Blueprint('main', __name__)
 
