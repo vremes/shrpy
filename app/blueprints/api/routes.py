@@ -96,6 +96,4 @@ def delete_file(signature, filename):
 
     os.remove(file_path)
 
-    response_txt = render_template_string('{{ filename }} has been deleted.', filename=filename)
-    
-    return response_txt
+    return render_template_string('{{ filename }} has been deleted, you can now close this page.', filename=filename)
