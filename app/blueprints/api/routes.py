@@ -20,7 +20,7 @@ def sharex():
         "DeletionURL": "$json:delete_url$"
     }
 
-    if current_app.config['UPLOAD_PASSWORD'] is not None:
+    if current_app.config.get('UPLOAD_PASSWORD') is not None:
         response_dict['Headers'] = {
             "Authorization": "YOUR-UPLOAD-PASSWORD-HERE"
         }
@@ -29,7 +29,7 @@ def sharex():
 
 @api.route('/upload', methods=['POST'])
 def upload():
-    upload_password = current_app.config['UPLOAD_PASSWORD']
+    upload_password = current_app.config.get('UPLOAD_PASSWORD')
     if upload_password is not None:
         authorization_header = request.headers.get('Authorization')
 
