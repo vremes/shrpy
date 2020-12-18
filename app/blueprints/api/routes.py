@@ -1,7 +1,7 @@
 import os
 import hmac
+import secrets
 import hashlib
-from uuid import uuid4
 from werkzeug.utils import secure_filename
 from flask import Blueprint, request, abort, current_app, jsonify, url_for, render_template_string
 
@@ -56,12 +56,11 @@ def upload():
         return abort(400, 'Invalid file extension!')
 
     # Filenames
-    secure_original_filename = secure_filename(filename) # Secure version of the file's original filename
-    new_filename = '{}-{}'.format(uuid4().hex, secure_original_filename) # Server generated filename + secure original filename
-    full_filename = '{}{}'.format(new_filename, ext)
-    save_directory = os.path.join(upload_directory, full_filename)
+    filename_secure = secure_filename(filename)
+    full_filename = '{}-{}{}'.format(secrets.token_urlsafe(12), filename_secure, ext)
 
     # Save file
+    save_directory = os.path.join(upload_directory, full_filename)
     uploaded_file.save(save_directory)
 
     # HMAC magic for deletion url
