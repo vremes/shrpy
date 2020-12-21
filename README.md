@@ -14,7 +14,7 @@ I created this mostly for my personal use, but if you have any suggestions, idea
 2. Set `FLASK_SECRET` OS environment variable to something super secret
 3. Use WSGI server and web server of your choice to deploy it, i use [Gunicorn](https://gunicorn.org/) and [NGINX](https://www.nginx.com/), [here](https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-ubuntu-18-04) is a nice tutorial
 * If you want to run Flask development server, simply type `python3 wsgi.py`
----
+
 ## Example NGINX config
 ```nginx
 server {
@@ -42,5 +42,4 @@ autorestart=true
 stderr_logfile=/var/log/shrpy.err.log
 stdout_logfile=/var/log/shrpy.out.log
 environment=FLASK_SECRET="PLEASE-CHANGE-THIS"
-
 ```
