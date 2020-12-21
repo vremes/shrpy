@@ -57,6 +57,11 @@ def upload():
 
     # Filenames
     filename_secure = secure_filename(filename)
+
+    # Limit the length of original filename to 18 characters
+    if filename_secure:
+        filename_secure = filename_secure[:18]
+
     full_filename = '{}-{}{}'.format(secrets.token_urlsafe(12), filename_secure, ext)
 
     # Save file
