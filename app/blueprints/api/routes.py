@@ -1,8 +1,7 @@
 import os
 import hmac
-import secrets
 import hashlib
-from werkzeug.utils import secure_filename
+from app.helpers import files, auth
 from flask import Blueprint, request, abort, current_app, jsonify, url_for, render_template_string
 
 api = Blueprint('api', __name__)
@@ -17,28 +16,22 @@ def sharex():
         "Body": "MultipartFormData",
         "FileFormName": "file",
         "URL": "$json:url$",
-        "DeletionURL": "$json:delete_url$"
-    }
-
-    if current_app.config.get('UPLOAD_PASSWORD') is not None:
-        response_dict['Headers'] = {
-            "Authorization": "YOUR-UPLOAD-PASSWORD-HERE"
+        "DeletionURL": "$json:delete_url$",
+        "Headers": {
+            "Authorization": "YOUR-UPLOAD-PASSWORD-HERE",
+            "X-Use-Original-Filename": 1,
         }
+    }
 
     return jsonify(response_dict)
 
 @api.route('/upload', methods=['POST'])
+@auth.auth_required
 def upload():
-    upload_password = current_app.config.get('UPLOAD_PASSWORD')
-    if upload_password is not None:
-        authorization_header = request.headers.get('Authorization')
-
-        if authorization_header != upload_password:
-            return abort(401)
-
     uploaded_file = request.files.get('file')
     upload_directory = current_app.config['UPLOAD_DIR']
-    allowed_extensions = current_app.config['ALLOWED_EXTENSIONS']
+    upload_password = current_app.config.get('UPLOAD_PASSWORD')
+    use_og_filename = request.headers.get('X-Use-Original-Filename', type=int) == 1
 
     if uploaded_file is None:
         return abort(400)
@@ -48,38 +41,27 @@ def upload():
         os.makedirs(upload_directory)
 
     original_filename = uploaded_file.filename.lower()
-    
-    # Extract filename and extension
-    filename, ext = os.path.splitext(original_filename)
 
-    if not ext in allowed_extensions:
-        return abort(400, 'Invalid file extension!')
+    # Check if file is allowed
+    if files.is_allowed_file(original_filename) is False:
+        return abort(400)
 
-    # Filenames
-    filename_secure = secure_filename(filename)
-
-    # Limit the length of original filename to 18 characters
-    if filename_secure:
-        filename_secure = filename_secure[:18]
-
-    full_filename = '{}-{}{}'.format(secrets.token_urlsafe(12), filename_secure, ext)
+    modified_filename = files.get_modified_filename(original_filename, use_og_filename)
 
     # Save file
-    save_directory = os.path.join(upload_directory, full_filename)
+    save_directory = os.path.join(upload_directory, modified_filename)
     uploaded_file.save(save_directory)
 
-    # HMAC magic for deletion url
-    secret_key = current_app.secret_key.encode('utf-8')
-    hmac_data = full_filename.encode('utf-8')
-
     # Generate HMAC using Flask's secret key and filename
-    signature = hmac.new(secret_key, hmac_data, hashlib.sha256).hexdigest()
+    secret_key = current_app.secret_key.encode('utf-8')
+    hmac_data = modified_filename.encode('utf-8')
+    signature = hmac.new(secret_key, hmac_data,hashlib.sha256).hexdigest()
 
     return jsonify(
             {
-                'filename': full_filename, 
-                'url': url_for('main.uploads', filename=full_filename, _external=True),
-                'delete_url': url_for('api.delete_file', signature=signature, filename=full_filename, _external=True)
+                'filename': modified_filename, 
+                'url': url_for('main.uploads', filename=modified_filename, _external=True),
+                'delete_url': url_for('api.delete_file', signature=signature, filename=modified_filename, _external=True)
             }
         )
 
@@ -87,11 +69,10 @@ def upload():
 def delete_file(signature, filename):
     secret_key = current_app.secret_key.encode('utf-8')
     hmac_data = filename.encode('utf-8')
-
     hmac_signature = hmac.new(secret_key, hmac_data, hashlib.sha256).hexdigest()
 
     if hmac.compare_digest(hmac_signature, signature) is False:
-        return abort(404)
+        return abort(401)
 
     file_path = os.path.join(current_app.config['UPLOAD_DIR'], filename)
     
