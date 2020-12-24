@@ -30,7 +30,6 @@ def sharex():
 def upload():
     uploaded_file = request.files.get('file')
     upload_directory = current_app.config['UPLOAD_DIR']
-    upload_password = current_app.config.get('UPLOAD_PASSWORD')
     use_og_filename = request.headers.get('X-Use-Original-Filename', type=int) == 1
 
     if uploaded_file is None:

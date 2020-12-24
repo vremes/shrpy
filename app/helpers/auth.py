@@ -1,6 +1,6 @@
 from app import config
 from functools import wraps
-from flask import current_app, request, redirect, url_for, abort
+from flask import request, abort
 
 def auth_required(f):
     """
