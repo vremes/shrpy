@@ -6,20 +6,19 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 def get_stale_files():
     """
-    Returns a list of files that are older than `config.DELETE_THRESHOLD_DAYS` or `None` if no files are found.
+    Returns a list of files that are older than `config.DELETE_THRESHOLD_DAYS`.
     """
     days_threshold = config.DELETE_THRESHOLD_DAYS
     upload_directory = config.UPLOAD_DIR
+    stale_files = []
 
     if days_threshold == 0:
-        return None
+        return stale_files
 
     file_list = os.listdir(upload_directory)
 
     if len(file_list) == 0:
-        return None
-
-    stale_files = []
+        return stale_files
 
     current_date = datetime.datetime.today()
 
