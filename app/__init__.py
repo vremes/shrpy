@@ -1,5 +1,6 @@
 import json
 from flask import Flask
+from app.helpers import delete_files
 from werkzeug.exceptions import HTTPException
 
 def create_app():
@@ -7,6 +8,9 @@ def create_app():
 
     # Load config.py
     app.config.from_pyfile('config.py')
+
+    # Setup automatic file deletion
+    delete_files.setup_scheduler()
 
     # jsonify HTTP errors
     @app.errorhandler(HTTPException)
