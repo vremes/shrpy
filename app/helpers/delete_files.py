@@ -1,5 +1,4 @@
 import os
-import time
 import datetime
 from app import config
 from apscheduler.schedulers.background import BackgroundScheduler
