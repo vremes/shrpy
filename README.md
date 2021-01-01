@@ -53,4 +53,4 @@ Config file is located in [/app/config.py](/app/config.py)
 
 `UPLOAD_PASSWORD`: Password (str) for `/api/upload` endpoint, you can leave it to `None` if you do not want to use a password.
 
-`DELETE_THRESHOLD_DAYS`: Automatically delete the files in UPLOAD_FOLDER that are older than the specified value, leave this to `0` if you want to disable this feature.
+`DELETE_THRESHOLD_DAYS`: Automatically delete the files in `UPLOAD_FOLDER` that are older than the specified value (in days), leave this to `0` if you want to disable this feature.
