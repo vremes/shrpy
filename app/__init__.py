@@ -1,6 +1,7 @@
 import json
 from flask import Flask
 from app.helpers import delete_files
+from app.helpers.api import response
 from werkzeug.exceptions import HTTPException
 
 def create_app():
@@ -15,14 +16,8 @@ def create_app():
     # jsonify HTTP errors
     @app.errorhandler(HTTPException)
     def handle_exception(e):
-        response = e.get_response()
-        response.data = json.dumps({
-            "code": e.code,
-            "name": e.name,
-            "description": e.description,
-        })
-        response.content_type = "application/json"
-        return response
+        err_response = e.get_response()
+        return response(e.code, e.name, description=e.description)
 
     # Import blueprints
     from app.blueprints.api.routes import api

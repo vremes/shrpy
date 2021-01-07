@@ -2,6 +2,7 @@ import os
 import hmac
 import hashlib
 from app.helpers import files, auth
+from app.helpers.api import response
 from flask import Blueprint, request, abort, current_app, jsonify, url_for, render_template_string
 
 api = Blueprint('api', __name__)
@@ -20,7 +21,8 @@ def sharex():
         "Headers": {
             "Authorization": "YOUR-UPLOAD-PASSWORD-HERE",
             "X-Use-Original-Filename": 1,
-        }
+        },
+        "ErrorMessage": "$json:status$"
     }
 
     return jsonify(response_dict)
@@ -33,7 +35,7 @@ def upload():
     use_og_filename = request.headers.get('X-Use-Original-Filename', type=int) == 1
 
     if uploaded_file is None:
-        return abort(400)
+        return response(400, 'File upload failed, invalid file')
 
     # Check if upload directory exists
     if os.path.isdir(upload_directory) is False:
@@ -43,7 +45,7 @@ def upload():
 
     # Check if file is allowed
     if files.is_allowed_file(original_filename) is False:
-        return abort(400)
+        return response(400, 'Invalid file type')
 
     modified_filename = files.get_modified_filename(original_filename, use_og_filename)
 
