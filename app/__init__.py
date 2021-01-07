@@ -16,7 +16,6 @@ def create_app():
     # jsonify HTTP errors
     @app.errorhandler(HTTPException)
     def handle_exception(e):
-        err_response = e.get_response()
         return response(e.code, e.name, description=e.description)
 
     # Import blueprints
