@@ -5,3 +5,7 @@ spec:
    git:
      branch: main
      repo_clone_url: https://github.com/vremes/shrpy.git
+   envs:
+   - key: FLASK_SECRET
+     value: "CHANGE-THIS"
+     type: SECRET
