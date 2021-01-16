@@ -4,7 +4,7 @@ from flask import request, abort
 
 def auth_required(f):
     """
-    Check HTTP `Authorization` header against the value of `config.UPLOAD_PASSWORD`
+    Check HTTP `Authorization` header against the value of `config.UPLOAD_PASSWORD`, calls `flask.abort` if the password does not match.
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):
