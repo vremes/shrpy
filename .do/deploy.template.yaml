@@ -3,7 +3,7 @@ spec:
  services:
  - name: web
    git:
-     branch: main
+     branch: master
      repo_clone_url: https://github.com/vremes/shrpy.git
    envs:
    - key: FLASK_SECRET
