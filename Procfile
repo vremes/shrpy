@@ -1,1 +1,1 @@
-web: gunicorn --workers=2 --threads=4 --timeout=60 --bind 0.0.0.0:8080 wsgi:application
+web: gunicorn --worker-tmp-dir /dev/shm --workers=2 --threads=4 --timeout=60 --bind 0.0.0.0:8080 wsgi:application
