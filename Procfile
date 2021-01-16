@@ -1,1 +1,1 @@
-web: gunicorn --workers=2 --threads=4 --timeout=60 wsgi:application
+web: gunicorn --workers=2 --threads=4 --timeout=60 --bind 0.0.0.0:8080 wsgi:application
