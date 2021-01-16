@@ -1,12 +1,11 @@
 spec:
- name: shrpy
- services:
- - name: web
+  name: shrpy
+  services:
+  - name: web
    git:
      branch: main
      repo_clone_url: https://github.com/vremes/shrpy.git
    envs:
-  - key: FLASK_SECRET
-    value: PLEASE-CHANGE-THIS-TO-SOMETHING-SECRET
-    scope: RUN_TIME
-    type: SECRET
+   - key: FLASK_SECRET
+     value: "PLEASE-CHANGE-THIS-TO-SOMETHING-SECRET"
+     type: SECRET
