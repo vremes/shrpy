@@ -7,5 +7,6 @@ spec:
      repo_clone_url: https://github.com/vremes/shrpy.git
    envs:
    - key: FLASK_SECRET
-     value: "CHANGE-THIS"
+     value: "CHANGE-THIS-TO-SOMETHING-SECRET"
      type: SECRET
+     scope: RUN_TIME
