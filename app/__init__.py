@@ -1,4 +1,3 @@
-import json
 from flask import Flask
 from app.helpers import delete_files
 from app.helpers.api import response
