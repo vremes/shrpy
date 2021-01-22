@@ -81,5 +81,6 @@ def delete_file(signature, filename):
         return abort(404)
 
     os.remove(file_path)
-
-    return render_template_string('{{ filename }} has been deleted, you can now close this page.', filename=filename)
+    
+    message = render_template_string('{{ filename }} has been deleted, you can now close this page', filename=filename)
+    return response(message=message)

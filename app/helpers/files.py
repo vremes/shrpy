@@ -11,7 +11,7 @@ def is_allowed_file(filename: str) -> bool:
 
     return ext in config.ALLOWED_EXTENSIONS
 
-def get_modified_filename(filename: str, use_original_filename=False) -> str:
+def get_modified_filename(filename: str, use_original_filename: bool = False) -> str:
     """
     Returns modified filename
     """
