@@ -4,11 +4,9 @@
 
 [![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/vremes/shrpy/tree/master)
 
-Minimal [ShareX](https://getsharex.com/) custom uploader written in Python (Flask).
+[ShareX](https://getsharex.com/) custom uploader/destination server written in Python (Flask).
 
-ShareX custom uploader configuration is available at `/api/sharex` route.
-
-I created this mostly for my personal use, but if you have any suggestions, ideas or improvements feel free to submit a new issue!
+I created this mostly for my personal use, but if you have any suggestions, ideas or improvements feel free to open a new issue.
 
 # Setup
 1. Install requirements: `pip3 install -r requirements.txt`
@@ -16,7 +14,7 @@ I created this mostly for my personal use, but if you have any suggestions, idea
 3. Use WSGI server and web server of your choice to deploy it, i use [Gunicorn](https://gunicorn.org/) and [NGINX](https://www.nginx.com/), [here](https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-ubuntu-18-04) is a nice tutorial
 * If you want to run Flask development server, simply type `python3 wsgi.py`
 
-Once deployment is successful, open your ShareX and go to `Destinations` -> `Custom uploader settings` -> `Import` -> `From URL` and enter your URL (e.g `https://example.com/api/sharex`) then click `OK`.
+Once deployment is successful, open your ShareX and go to `Destinations` -> `Custom uploader settings` -> `Import` -> `From URL` and enter your URL (e.g. `https://example.com/api/sharex`) then click `OK`.
 
 ## Example NGINX config
 ```nginx
@@ -46,7 +44,7 @@ stderr_logfile=/var/log/shrpy.err.log
 stdout_logfile=/var/log/shrpy.out.log
 environment=FLASK_SECRET="PLEASE-CHANGE-THIS"
 ```
-# Config file
+## Configuration
 Config file is located in [/app/config.py](/app/config.py)
 
 `MAX_CONTENT_LENGTH`: File upload limit, in bytes.
@@ -58,3 +56,9 @@ Config file is located in [/app/config.py](/app/config.py)
 `UPLOAD_PASSWORD`: Password (str) for `/api/upload` endpoint, you can leave it to `None` if you do not want to use a password.
 
 `DELETE_THRESHOLD_DAYS`: Automatically delete the files in `UPLOAD_FOLDER` that are older than the specified value (in days), leave this to `0` if you want to disable this feature.
+
+## Headers
+
+`Authorization`: The password for uploading files (`UPLOAD_PASSWORD` in config.py file), simply ignore this header if you don't use a password.
+
+`X-Use-Original-Filename`: Allows you to decide if you want to include the file's original filename when saving uploaded files, this is enabled by default, set the value to `0` to disable.
