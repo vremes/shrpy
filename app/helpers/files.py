@@ -23,12 +23,10 @@ def get_modified_filename(filename: str, use_original_filename: bool = False) ->
     random_fname = secrets.token_urlsafe(12)
 
     if secure_fname and use_original_filename:
-        secure_fname = secure_fname[:18]
-        full_filename = '{}-{}{}'.format(random_fname, secure_fname, ext)
-    else:
-        full_filename = '{}{}'.format(random_fname, ext)
+        # Example: URzRykJFOiSCCsQo-my-og-filename.png
+        return '{}-{}{}'.format(random_fname, secure_fname[:18], ext)
 
-    return full_filename
+    return '{}{}'.format(random_fname, ext)
 
 def create_hmac_hash(secret, hmac_data) -> str:
     """
@@ -40,7 +38,7 @@ def create_hmac_hash(secret, hmac_data) -> str:
     """
     secret = secret.encode('utf-8')
     hmac_data = hmac_data.encode('utf-8')
-    hmac_hash = hmac.new(secret, hmac_data,hashlib.sha256).hexdigest()
+    hmac_hash = hmac.new(secret, hmac_data, hashlib.sha256).hexdigest()
     return hmac_hash
 
 def is_valid_hash(hash_a: str, hash_b: str) -> bool:
