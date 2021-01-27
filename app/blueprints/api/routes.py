@@ -1,7 +1,7 @@
 import os
 from app.helpers import files, auth
 from app.helpers.api import response
-from flask import Blueprint, request, abort, current_app, jsonify, url_for, render_template_string
+from flask import Blueprint, request, abort, current_app, jsonify, url_for, render_template_string, safe_join
 
 api = Blueprint('api', __name__)
 
@@ -32,7 +32,7 @@ def upload():
     modified_filename = files.get_modified_filename(uploaded_file.filename, use_og_filename)
 
     # Save file
-    save_directory = os.path.join(upload_directory, modified_filename)
+    save_directory = safe_join(upload_directory, modified_filename)
     uploaded_file.save(save_directory)
 
     # Generate HMAC hash using Flask's secret key and filename
@@ -54,7 +54,7 @@ def delete_file(hmac_hash, filename):
     if files.is_valid_hash(hmac_hash, new_hmac_hash) is False:
         return abort(404)
 
-    file_path = os.path.join(current_app.config['UPLOAD_DIR'], filename)
+    file_path = safe_join(current_app.config['UPLOAD_DIR'], filename)
     
     # If file does not exist
     if os.path.isfile(file_path) is False:
