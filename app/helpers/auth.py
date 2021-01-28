@@ -11,7 +11,7 @@ def auth_required(f):
     def decorated_function(*args, **kwargs):
         if config.UPLOAD_PASSWORD is not None:
             authorization_header = request.headers.get('Authorization')
-            if safe_str_cmp(config.UPLOAD_PASSWORD, authorization_header) is False:
+            if authorization_header is None or safe_str_cmp(config.UPLOAD_PASSWORD, authorization_header) is False:
                 return abort(401)
         return f(*args, **kwargs)
     return decorated_function
