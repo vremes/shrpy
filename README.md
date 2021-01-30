@@ -31,6 +31,13 @@ server {
     location /uploads {
         alias /var/www/shrpy/app/uploads/;
     }
+    
+    # Optional headers
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains";
+    add_header Content-Security-Policy "default-src 'self';";
+    add_header X-Frame-Options "DENY";
+    add_header X-Content-Type-Options "nosniff";
+    add_header Referrer-Policy "strict-origin-when-cross-origin";
 }
 ```
 ## Example [Supervisord](http://supervisord.org/) config
