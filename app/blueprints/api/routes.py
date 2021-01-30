@@ -1,5 +1,5 @@
 import os
-from app.helpers import files, auth
+from app.helpers import auth
 from app.helpers.api import response
 from app.helpers.files import File
 from flask import Blueprint, request, abort, current_app, jsonify, url_for, render_template_string, safe_join
@@ -8,7 +8,7 @@ api = Blueprint('api', __name__)
 
 @api.route('/sharex')
 def sharex():
-    sharex_config = files.File.sharex_config()
+    sharex_config = File.sharex_config()
     return jsonify(sharex_config)
 
 @api.route('/upload', methods=['POST'])

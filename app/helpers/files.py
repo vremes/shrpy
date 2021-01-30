@@ -13,8 +13,6 @@ class File:
     def __init__(self, werkzeug_file_class: FileStorage, use_original_filename = False):
         """
         Class for uploaded files which takes the `werkzeug.datastructures.FileStorage` from `flask.Request.files` as first parameter
-
-        :param werkzeug_file_class 
         """
 
         if isinstance(werkzeug_file_class, FileStorage) is False:
