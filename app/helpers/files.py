@@ -10,7 +10,7 @@ from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
 
 class File:
-    def __init__(self, werkzeug_file_class: FileStorage, use_original_filename = False):
+    def __init__(self, werkzeug_file_class: FileStorage):
         """
         Class for uploaded files which takes the `werkzeug.datastructures.FileStorage` from `flask.Request.files` as first parameter
         """
@@ -20,7 +20,7 @@ class File:
 
         self.file = werkzeug_file_class
         self.custom_filename = None
-        self.use_original_filename = use_original_filename
+        self.use_original_filename = False
 
         # splitext returns tuple ('my-file', '.txt')
         self._filename_tuple = os.path.splitext(self.file.filename.lower())

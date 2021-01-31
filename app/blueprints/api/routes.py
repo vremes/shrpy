@@ -24,7 +24,8 @@ def upload():
     use_og_filename = request.headers.get('X-Use-Original-Filename', type=int) == 1
 
     # Our own class which utilises werkzeug.datastructures.FileStorage
-    f = File(uploaded_file, use_og_filename)
+    f = File(uploaded_file)
+    f.use_original_filename = use_og_filename
 
     # Check if file is allowed
     if f.is_allowed() is False:
