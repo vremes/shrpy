@@ -1,7 +1,10 @@
 from app.helpers import auth
 from app.helpers.api import response
 from app.helpers.files import File
-from flask import Blueprint, request, abort, current_app, jsonify, url_for, render_template_string
+from flask import (
+    Blueprint, request, abort, current_app, jsonify, 
+    url_for, render_template_string
+)
 
 api = Blueprint('api', __name__)
 
@@ -14,6 +17,10 @@ def sharex():
 @auth.auth_required
 def upload():
     uploaded_file = request.files.get('file')
+
+    if uploaded_file is None:
+        return response(400, 'Invalid file')
+
     use_og_filename = request.headers.get('X-Use-Original-Filename', type=int) == 1
 
     # Our own class which utilises werkzeug.datastructures.FileStorage
