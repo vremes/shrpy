@@ -1,8 +1,7 @@
 import flask
 
 def response(status_code: int = 200, status: str = "OK", **kwargs) -> flask.Response:
-    """
-    Wrapper for `flask.jsonify`
+    """Wrapper for `flask.jsonify`
 
     :param int status_code: HTTP status code, defaults to `200`
     :param str status: HTTP status message or your own custom status, defaults to `OK`

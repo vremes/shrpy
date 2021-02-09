@@ -32,7 +32,7 @@ def get_stale_files():
     return stale_files
 
 def delete_stale_files():
-    """Deletes files returned by `delete_files.get_stale_files()`"""
+    """Deletes files returned by `delete_files.get_stale_files()`."""
     stale_files = get_stale_files()
 
     for stale_file in stale_files:

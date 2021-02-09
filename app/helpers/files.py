@@ -43,7 +43,7 @@ class File:
         return self.extension in config.ALLOWED_EXTENSIONS
 
     def save(self, save_directory = config.UPLOAD_DIR) -> None:
-        """Saves the file to `UPLOAD_DIR`"""
+        """Saves the file to `UPLOAD_DIR`."""
         if os.path.isdir(save_directory) is False:
             os.makedirs(save_directory)
 
