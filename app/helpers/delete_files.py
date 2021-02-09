@@ -4,9 +4,7 @@ from app import config
 from apscheduler.schedulers.background import BackgroundScheduler
 
 def get_stale_files():
-    """
-    Returns a list of files that are older than `config.DELETE_THRESHOLD_DAYS`.
-    """
+    """Returns a list of files that are older than `config.DELETE_THRESHOLD_DAYS`."""
     days_threshold = config.DELETE_THRESHOLD_DAYS
     upload_directory = config.UPLOAD_DIR
     stale_files = []
@@ -34,9 +32,7 @@ def get_stale_files():
     return stale_files
 
 def delete_stale_files():
-    """
-    Deletes files returned by `delete_files.get_stale_files()`
-    """
+    """Deletes files returned by `delete_files.get_stale_files()`"""
     stale_files = get_stale_files()
 
     for stale_file in stale_files:
