@@ -2,7 +2,7 @@ from app.helpers import auth
 from app.helpers.api import response
 from app.helpers.files import File
 from flask import (
-    Blueprint, request, abort, current_app, jsonify, 
+    Blueprint, request, abort, current_app, jsonify,
     url_for, render_template_string
 )
 
@@ -43,7 +43,7 @@ def upload():
     # Return JSON
     return jsonify(
             {
-                'filename': filename, 
+                'filename': filename,
                 'url': url_for('main.uploads', filename=filename, _external=True),
                 'delete_url': url_for('api.delete_file', hmac_hash=hmac_hash, filename=filename, _external=True)
             }
@@ -59,6 +59,6 @@ def delete_file(hmac_hash, filename):
 
     if File.delete(filename) is False:
         return abort(404)
-    
+
     message = render_template_string('{{ filename }} has been deleted, you can now close this page', filename=filename)
     return response(message=message)

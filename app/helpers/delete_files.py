@@ -25,7 +25,7 @@ def get_stale_files():
         file_path = os.path.join(upload_directory, f)
         file_modification_time = os.path.getmtime(file_path)
         file_modification_date = datetime.datetime.fromtimestamp(file_modification_time)
-        
+
         date_difference = current_date - file_modification_date
 
         if date_difference.days >= days_threshold:

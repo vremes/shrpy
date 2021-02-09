@@ -42,7 +42,7 @@ class File:
             self.custom_filename = '{}{}'.format(custom_filename, self.extension)
 
         return self.custom_filename
-    
+
     def is_allowed(self) -> bool:
         """
         Check if file is allowed, based on `config.ALLOWED_EXTENSIONS`
@@ -80,7 +80,7 @@ class File:
         """
 
         hmac_hash = hmac.new(
-            secret_key.encode('utf-8'), 
+            secret_key.encode('utf-8'),
             filename.encode('utf-8'),
             hashlib.sha256
         ).hexdigest()
