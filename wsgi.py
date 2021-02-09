@@ -11,4 +11,4 @@ if __name__ == '__main__':
     application.secret_key = 'dev'
     application.debug = True
     application.config['DEBUG'] = True
-    application.run(host='0.0.0.0', port=5000)
+    application.run()
