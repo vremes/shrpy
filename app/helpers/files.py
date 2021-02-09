@@ -11,8 +11,7 @@ from werkzeug.datastructures import FileStorage
 
 class File:
     def __init__(self, werkzeug_file_class: FileStorage):
-        """Class for uploaded files which takes the `werkzeug.datastructures.FileStorage` from `flask.Request.files` as first parameter"""
-
+        """Class for uploaded files which takes the `werkzeug.datastructures.FileStorage` from `flask.Request.files` as first parameter."""
         if isinstance(werkzeug_file_class, FileStorage) is False:
             raise Exception("werkzeug_file_class should be instance of FileStorage")
 
@@ -26,7 +25,7 @@ class File:
         self.extension = self._filename_tuple[1]
 
     def get_filename(self, nbytes=12) -> str:
-        """Returns custom filename, generated using `secrets.token_urlsafe`"""
+        """Returns custom filename, generated using `secrets.token_urlsafe`."""
         if self.custom_filename is None:
             custom_filename = secrets.token_urlsafe(nbytes)
 
@@ -40,7 +39,7 @@ class File:
         return self.custom_filename
 
     def is_allowed(self) -> bool:
-        """Check if file is allowed, based on `config.ALLOWED_EXTENSIONS`"""
+        """Check if file is allowed, based on `config.ALLOWED_EXTENSIONS`."""
         return self.extension in config.ALLOWED_EXTENSIONS
 
     def save(self, save_directory = config.UPLOAD_DIR) -> None:
@@ -53,7 +52,7 @@ class File:
 
     @staticmethod
     def delete(filename: str) -> bool:
-        """Deletes the file from `config.UPLOAD_DIR`, if it exists"""
+        """Deletes the file from `config.UPLOAD_DIR`, if it exists."""
         file_path = safe_join(config.UPLOAD_DIR, filename)
 
         if os.path.isfile(file_path) is False:
@@ -65,8 +64,7 @@ class File:
 
     @staticmethod
     def create_hmac_hash(filename: str, secret_key: str = None) -> str:
-        """Creates HMAC hash using the filename and returns it"""
-
+        """Creates HMAC hash using the filename and returns it."""
         hmac_hash = hmac.new(
             secret_key.encode('utf-8'),
             filename.encode('utf-8'),
@@ -77,12 +75,12 @@ class File:
 
     @staticmethod
     def is_valid_hash(hash_a: str, hash_b: str) -> bool:
-        """Compares two hashes using `hmac.compare_digest`"""
+        """Compares two hashes using `hmac.compare_digest`."""
         return hmac.compare_digest(hash_a, hash_b)
 
     @staticmethod
     def sharex_config() -> dict:
-        """Returns the configuration for ShareX as dictionary"""
+        """Returns the configuration for ShareX as dictionary."""
         cfg = {
             "Version": "1.0.0",
             "DestinationType": "ImageUploader, FileUploader",
