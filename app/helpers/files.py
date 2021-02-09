@@ -79,7 +79,7 @@ class File:
     def is_valid_hash(hash_a: str, hash_b: str) -> bool:
         """Compares two hashes using `hmac.compare_digest`"""
         return hmac.compare_digest(hash_a, hash_b)
-    
+
     @staticmethod
     def sharex_config() -> dict:
         """Returns the configuration for ShareX as dictionary"""
