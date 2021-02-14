@@ -1,7 +1,9 @@
 from flask import Flask
-from app.helpers import delete_files
 from app.helpers.api import response
 from werkzeug.exceptions import HTTPException
+from app.helpers.delete_files import FileDeletionScheduler
+
+file_deletion_scheduler = FileDeletionScheduler()
 
 def create_app():
     app = Flask(__name__)
@@ -10,7 +12,7 @@ def create_app():
     app.config.from_pyfile('config.py')
 
     # Setup automatic file deletion
-    delete_files.setup_scheduler()
+    file_deletion_scheduler.setup_scheduler()
 
     # jsonify HTTP errors
     @app.errorhandler(HTTPException)
