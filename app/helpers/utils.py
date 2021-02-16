@@ -2,11 +2,11 @@
 import hmac
 import hashlib
 
-def create_hmac_hash(filename: str, secret_key: str = None) -> str:
-    """Creates HMAC hash using the filename and returns it."""
+def create_hmac_hash(hmac_data: str, secret_key: str = None) -> str:
+    """Creates HMAC hash using the hmac_data and returns it."""
     hmac_hash = hmac.new(
         secret_key.encode('utf-8'),
-        filename.encode('utf-8'),
+        hmac_data.encode('utf-8'),
         hashlib.sha256
     ).hexdigest()
 
