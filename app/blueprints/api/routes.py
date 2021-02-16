@@ -1,6 +1,8 @@
 from app.helpers import auth
-from app.helpers.api import response
+from app.helpers import utils
 from app.helpers.files import File
+from app.helpers.urls import ShortUrl
+from app.helpers.api import response
 from flask import (
     Blueprint, request, abort, current_app, jsonify,
     url_for, render_template_string
@@ -8,10 +10,15 @@ from flask import (
 
 api = Blueprint('api', __name__)
 
-@api.route('/sharex')
-def sharex():
-    sharex_config = File.sharex_config()
-    return jsonify(sharex_config)
+@api.route('/sharex/upload')
+def upload_config():
+    config = File.sharex_config()
+    return jsonify(config)
+
+@api.route('/sharex/shorten')
+def shorten_config():
+    config = ShortUrl.sharex_config()
+    return jsonify(config)
 
 @api.route('/upload', methods=['POST'])
 @auth.auth_required
@@ -38,7 +45,7 @@ def upload():
     f.save()
 
     # Generate HMAC hash using Flask's secret key and filename
-    hmac_hash = File.create_hmac_hash(filename, current_app.secret_key)
+    hmac_hash = utils.create_hmac_hash(filename, current_app.secret_key)
 
     # Return JSON
     return jsonify(
@@ -51,10 +58,10 @@ def upload():
 
 @api.route('/delete-file/<hmac_hash>/<filename>')
 def delete_file(hmac_hash, filename):
-    new_hmac_hash = File.create_hmac_hash(filename, current_app.secret_key)
+    new_hmac_hash = utils.create_hmac_hash(filename, current_app.secret_key)
 
     # If hash does not match
-    if File.is_valid_hash(hmac_hash, new_hmac_hash) is False:
+    if utils.is_valid_hash(hmac_hash, new_hmac_hash) is False:
         return abort(404)
 
     if File.delete(filename) is False:
@@ -62,3 +69,43 @@ def delete_file(hmac_hash, filename):
 
     message = render_template_string('{{ filename }} has been deleted, you can now close this page', filename=filename)
     return response(message=message)
+
+@api.route('/shorten', methods=['POST'])
+@auth.auth_required
+def shorten():
+    url = request.form.get('url')
+
+    if url is None:
+        return response(400, 'Invalid URL')
+
+    short_url = ShortUrl(url)
+
+    if short_url.is_valid() is False:
+        return response(400, 'Invalid URL')
+
+    # Add URL to database
+    short_url.add()
+
+    # Create HMAC for URL using token
+    token = short_url.get_token()
+    hmac_hash = utils.create_hmac_hash(token, current_app.secret_key)
+
+    return jsonify(
+        {
+            'url': url_for('main.short_url', token=token, _external=True),
+            'delete_url': url_for('api.delete_url', hmac_hash=hmac_hash, token=token, _external=True)
+        }
+    )
+
+@api.route('/delete-short-url/<hmac_hash>/<token>')
+def delete_url(hmac_hash, token):
+    new_hmac_hash = utils.create_hmac_hash(token, current_app.secret_key)
+
+    # If hash does not match
+    if utils.is_valid_hash(hmac_hash, new_hmac_hash) is False:
+        return abort(404)
+
+    if ShortUrl.delete(token) is False:
+        return abort(404)
+
+    return response(message='This short URL has been deleted, you can now close this page')
