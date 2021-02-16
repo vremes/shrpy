@@ -80,7 +80,7 @@ class ShortUrl(_ShortUrl):
                 "url": "$input$"
             },
             "URL": "$json:url$",
-            "DeleteURL": "$json:delete_url$"
+            "DeletionURL": "$json:delete_url$"
         }
         return cfg
 
