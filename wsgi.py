@@ -1,6 +1,8 @@
-from dotenv import load_dotenv
 import os
 from app import create_app
+from dotenv import load_dotenv
+
+# Load .env file
 load_dotenv()
 
 # WSGI instance
