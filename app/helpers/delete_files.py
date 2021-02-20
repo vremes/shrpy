@@ -10,7 +10,7 @@ class FileDeletionScheduler:
         self.days_threshold = config.DELETE_THRESHOLD_DAYS
         self.file_extensions_tuple = tuple(config.ALLOWED_EXTENSIONS)
 
-    def get_stale_files(self):
+    def get_stale_files(self) -> list:
         """Returns a list of files that are older than `config.DELETE_THRESHOLD_DAYS`."""
         stale_files = []
 
@@ -60,7 +60,7 @@ class FileDeletionScheduler:
         for stale_file in stale_files:
             os.remove(stale_file)
 
-    def setup_scheduler(self):
+    def setup(self):
         """Adds `delete_stale_files` job to scheduler and calls `scheduler.start()`."""
         if isinstance(self.days_threshold, int) is False or self.days_threshold == 0:
             return

@@ -12,7 +12,7 @@ def create_app():
     app.config.from_pyfile('config.py')
 
     # Setup automatic file deletion
-    file_deletion_scheduler.setup_scheduler()
+    file_deletion_scheduler.setup()
 
     # jsonify HTTP errors
     @app.errorhandler(HTTPException)

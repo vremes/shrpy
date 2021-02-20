@@ -1,19 +1,18 @@
 import os
 import flask
 import secrets
-
 from app import config
 from werkzeug.security import safe_join
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
 
 class File:
-    def __init__(self, werkzeug_file_class: FileStorage):
+    def __init__(self, file_instance: FileStorage):
         """Class for uploaded files which takes the `werkzeug.datastructures.FileStorage` from `flask.Request.files` as first parameter."""
-        if isinstance(werkzeug_file_class, FileStorage) is False:
-            raise Exception("werkzeug_file_class should be instance of FileStorage")
+        if isinstance(file_instance, FileStorage) is False:
+            raise Exception("file_instance should be instance of FileStorage from flask.Request.files")
 
-        self.file = werkzeug_file_class
+        self.file = file_instance
         self.custom_filename = None
         self.use_original_filename = False
 

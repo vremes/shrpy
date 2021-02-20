@@ -6,7 +6,7 @@ def response(status_code: int = 200, status: str = "OK", **kwargs) -> flask.Resp
     :param int status_code: HTTP status code, defaults to `200`
     :param str status: HTTP status message or your own custom status, defaults to `OK`
     :param **kwargs: Arbitrary keyword arguments, these will be added to the returned `Response` as JSON key/value pairs
-    :return: flask.jsonify (flask.Response)
+    :return flask.jsonify (flask.Response)
     """
     response_dict = {
         "status_code": status_code,
