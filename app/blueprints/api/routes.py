@@ -1,8 +1,6 @@
-from app.helpers import auth
 from app.helpers import utils
 from app.helpers.files import File
 from app.helpers.urls import ShortUrl
-from app.helpers.api import response
 from flask import (
     Blueprint, request, abort, current_app, jsonify,
     url_for, render_template_string
@@ -21,12 +19,12 @@ def shorten_config():
     return jsonify(config)
 
 @api.route('/upload', methods=['POST'])
-@auth.auth_required
+@utils.auth_required
 def upload():
     uploaded_file = request.files.get('file')
 
     if uploaded_file is None:
-        return response(400, 'Invalid file')
+        return utils.response(400, 'Invalid file')
 
     use_og_filename = request.headers.get('X-Use-Original-Filename', type=int) == 1
 
@@ -36,7 +34,7 @@ def upload():
 
     # Check if file is allowed
     if f.is_allowed() is False:
-        return response(400, 'Invalid file type')
+        return utils.response(400, 'Invalid file type')
 
     # Get the filename
     filename = f.get_filename()
@@ -68,20 +66,20 @@ def delete_file(hmac_hash, filename):
         return abort(404)
 
     message = render_template_string('{{ filename }} has been deleted, you can now close this page', filename=filename)
-    return response(message=message)
+    return utils.response(message=message)
 
 @api.route('/shorten', methods=['POST'])
-@auth.auth_required
+@utils.auth_required
 def shorten():
     url = request.form.get('url')
 
     if url is None:
-        return response(400, 'Invalid URL')
+        return utils.response(400, 'Invalid URL')
 
     short_url = ShortUrl(url)
 
     if short_url.is_valid() is False:
-        return response(400, 'Invalid URL')
+        return utils.response(400, 'Invalid URL')
 
     # Add URL to database
     short_url.add()
@@ -108,4 +106,4 @@ def delete_url(hmac_hash, token):
     if ShortUrl.delete(token) is False:
         return abort(404)
 
-    return response(message='This short URL has been deleted, you can now close this page')
+    return utils.response(message='This short URL has been deleted, you can now close this page')
