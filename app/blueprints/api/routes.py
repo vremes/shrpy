@@ -48,7 +48,6 @@ def upload():
     # Return JSON
     return jsonify(
             {
-                'filename': filename,
                 'url': url_for('main.uploads', filename=filename, _external=True),
                 'delete_url': url_for('api.delete_file', hmac_hash=hmac_hash, filename=filename, _external=True)
             }
