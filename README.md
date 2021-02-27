@@ -68,6 +68,8 @@ Config file is located in [/app/config.py](/app/config.py)
 
 `DELETE_THRESHOLD_DAYS`: Automatically delete the files in `UPLOAD_FOLDER` that are older than the specified value (in days), leave this to `0` if you want to disable this feature.
 
+`DISCORD_WEBHOOKS`: A list of Discord webhook URLs, leave this to empty list to disable this feature.
+
 ## Headers
 
 `Authorization`: The password for uploading files (`UPLOAD_PASSWORD` in config.py file), simply ignore this header if you don't use a password.

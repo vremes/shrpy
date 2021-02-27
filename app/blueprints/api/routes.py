@@ -1,4 +1,5 @@
 from app.helpers import utils
+from app import discord_webhook
 from app.helpers.files import File
 from app.helpers.urls import ShortUrl
 from flask import (
@@ -45,11 +46,27 @@ def upload():
     # Generate HMAC hash using Flask's secret key and filename
     hmac_hash = utils.create_hmac_hash(filename, current_app.secret_key)
 
+    # Create URLs
+    file_url = url_for('main.uploads', filename=filename, _external=True)
+    delete_url = url_for('api.delete_file', hmac_hash=hmac_hash, filename=filename, _external=True)
+
+    # Send data to Discord webhook
+    if discord_webhook.is_enabled():
+        embed = discord_webhook.embed(
+            title=filename, 
+            description='New file has been uploaded!', 
+            url=file_url, 
+            deletion_url=delete_url, 
+            is_file=True
+        )
+        discord_webhook.add_embed(embed)
+        discord_webhook.execute()
+
     # Return JSON
     return jsonify(
             {
-                'url': url_for('main.uploads', filename=filename, _external=True),
-                'delete_url': url_for('api.delete_file', hmac_hash=hmac_hash, filename=filename, _external=True)
+                'url': file_url,
+                'delete_url': delete_url
             }
         )
 
@@ -87,10 +104,25 @@ def shorten():
     token = short_url.get_token()
     hmac_hash = utils.create_hmac_hash(token, current_app.secret_key)
 
+    # Create URLs
+    short_url = url_for('main.short_url', token=token, _external=True)
+    delete_url = url_for('api.delete_url', hmac_hash=hmac_hash, token=token, _external=True)
+
+    # Send data to Discord webhook
+    if discord_webhook.is_enabled():
+        embed = discord_webhook.embed(
+            title=url,
+            description='URL has been shortened!', 
+            url=short_url, 
+            deletion_url=delete_url
+        )
+        discord_webhook.add_embed(embed)
+        discord_webhook.execute()
+
     return jsonify(
         {
-            'url': url_for('main.short_url', token=token, _external=True),
-            'delete_url': url_for('api.delete_url', hmac_hash=hmac_hash, token=token, _external=True)
+            'url': short_url,
+            'delete_url': delete_url
         }
     )
 

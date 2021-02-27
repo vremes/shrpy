@@ -15,3 +15,7 @@ UPLOAD_PASSWORD = None
 
 # Files older than DELETE_THRESHOLD_DAYS in UPLOAD_FOLDER will be deleted, leave this to 0 if you want to disable this feature
 DELETE_THRESHOLD_DAYS = 0
+
+# List of Discord webhooks https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks
+# leave this to empty list if you don't want to use Discord webhooks
+DISCORD_WEBHOOKS = []

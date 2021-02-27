@@ -1,8 +1,10 @@
 from flask import Flask
 from app.helpers.utils import response
 from werkzeug.exceptions import HTTPException
+from app.helpers.webhooks import CustomDiscordWebhook
 from app.helpers.delete_files import FileDeletionScheduler
 
+discord_webhook = CustomDiscordWebhook()
 file_deletion_scheduler = FileDeletionScheduler()
 
 def create_app():
@@ -10,6 +12,9 @@ def create_app():
 
     # Load config.py
     app.config.from_pyfile('config.py')
+
+    # Initialize Discord webhooks
+    discord_webhook.init_app(app)
 
     # Setup automatic file deletion
     file_deletion_scheduler.setup()
