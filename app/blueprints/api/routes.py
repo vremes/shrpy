@@ -52,14 +52,13 @@ def upload():
 
     # Send data to Discord webhook
     if discord_webhook.is_enabled():
-        embed = discord_webhook.embed(
-            title=filename, 
-            description='New file has been uploaded!', 
-            url=file_url, 
-            deletion_url=delete_url, 
+        discord_webhook.embed(
+            title=filename,
+            description='New file has been uploaded!',
+            url=file_url,
+            deletion_url=delete_url,
             is_file=True
         )
-        discord_webhook.add_embed(embed)
         discord_webhook.execute()
 
     # Return JSON
@@ -110,13 +109,12 @@ def shorten():
 
     # Send data to Discord webhook
     if discord_webhook.is_enabled():
-        embed = discord_webhook.embed(
+        discord_webhook.embed(
             title=url,
-            description='URL has been shortened!', 
-            url=short_url, 
+            description='URL has been shortened!',
+            url=short_url,
             deletion_url=delete_url
         )
-        discord_webhook.add_embed(embed)
         discord_webhook.execute()
 
     return jsonify(

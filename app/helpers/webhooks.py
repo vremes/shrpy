@@ -17,8 +17,8 @@ class CustomDiscordWebhook(DiscordWebhook):
             return False
         return len(self.url) > 0
 
-    def embed(self, title: str, description: str, url: str, deletion_url: str, is_file=False) -> DiscordEmbed:
-        """Creates and returns DiscordEmbed instance using given arguments."""
+    def embed(self, title: str, description: str, url: str, deletion_url: str, is_file=False):
+        """Creates DiscordEmbed instance using given arguments and adds it to webhook."""
         # Discord embed instance
         embed = DiscordEmbed()
 
@@ -38,4 +38,5 @@ class CustomDiscordWebhook(DiscordWebhook):
         # Add timestamp to embed
         embed.set_timestamp()
 
-        return embed
+        # Add embed to webhook
+        self.add_embed(embed)
