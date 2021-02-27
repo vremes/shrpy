@@ -1,3 +1,4 @@
+from app.helpers.utils import random_hex
 from discord_webhook import DiscordEmbed, DiscordWebhook
 
 class CustomDiscordWebhook(DiscordWebhook):
@@ -13,9 +14,7 @@ class CustomDiscordWebhook(DiscordWebhook):
 
     def is_enabled(self) -> bool:
         """Checks if Discord webhook is enabled."""
-        if self.url is None:
-            return False
-        return len(self.url) > 0
+        return self.url is not None and len(self.url) > 0
 
     def embed(self, title: str, description: str, url: str, deletion_url: str, is_file=False):
         """Creates DiscordEmbed instance using given arguments and adds it to webhook."""
@@ -30,10 +29,14 @@ class CustomDiscordWebhook(DiscordWebhook):
         embed.add_embed_field(name='URL', value=url)
         embed.add_embed_field(name='Deletion URL', value=deletion_url)
 
-        # Add image/video to embed
-        if is_file:
+        # Set random color
+        embed.set_color(
+            random_hex()
+        )
+
+        # Add image to embed if url is image
+        if is_file and url.endswith(('.mp4', '.webm')) is False:
             embed.set_image(url=url)
-            embed.set_video(url=url)
 
         # Add timestamp to embed
         embed.set_timestamp()

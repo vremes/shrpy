@@ -2,6 +2,7 @@ import hmac
 import flask
 import hashlib
 from app import config
+from random import randint
 from functools import wraps
 from werkzeug.security import safe_str_cmp
 
@@ -50,3 +51,6 @@ def auth_required(f):
                 return flask.abort(401)
         return f(*args, **kwargs)
     return decorated_function
+
+def random_hex():
+    return randint(0, 0xffffff)
