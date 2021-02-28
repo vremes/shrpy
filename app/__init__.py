@@ -13,8 +13,8 @@ def create_app():
     # Load config.py
     app.config.from_pyfile('config.py')
 
-    # Initialize Discord webhooks
-    discord_webhook.init_app(app)
+    # Set Discord webhook URLs
+    discord_webhook.url = app.config.get('DISCORD_WEBHOOKS')
 
     # Setup automatic file deletion
     file_deletion_scheduler.setup()

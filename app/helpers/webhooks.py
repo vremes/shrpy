@@ -2,15 +2,8 @@ from app.helpers.utils import random_hex
 from discord_webhook import DiscordEmbed, DiscordWebhook
 
 class CustomDiscordWebhook(DiscordWebhook):
-    def __init__(self, app=None):
-        """Custom Discord Webhook class which is initialised using Flask application"""
-        self.app = app
-        if app is not None:
-            self.init_app(app)
-
-    def init_app(self, app):
-        urls = app.config.get('DISCORD_WEBHOOKS')
-        super().__init__(url=urls)
+    def __init__(self, url=None):
+        super().__init__(url)
 
     def is_enabled(self) -> bool:
         """Checks if Discord webhook is enabled."""
@@ -43,3 +36,13 @@ class CustomDiscordWebhook(DiscordWebhook):
 
         # Add embed to webhook
         self.add_embed(embed)
+
+    def execute(self):
+        e = super().execute()
+
+        # Clean up embeds list after execute()
+        embeds = self.get_embeds()
+        for i, embed in enumerate(embeds):
+            self.remove_embed(i)
+
+        return e
