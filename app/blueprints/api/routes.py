@@ -53,8 +53,8 @@ def upload():
     # Send data to Discord webhook
     if discord_webhook.is_enabled():
         discord_webhook.embed(
-            title=filename,
-            description='New file has been uploaded!',
+            title='New file has been uploaded!',
+            description=file_url,
             url=file_url,
             deletion_url=delete_url,
             is_file=True
@@ -110,8 +110,8 @@ def shorten():
     # Send data to Discord webhook
     if discord_webhook.is_enabled():
         discord_webhook.embed(
-            title=url,
-            description='URL has been shortened!',
+            title='URL has been shortened!',
+            description='{} => {}'.format(url, short_url),
             url=short_url,
             deletion_url=delete_url
         )
