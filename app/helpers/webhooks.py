@@ -18,9 +18,13 @@ class CustomDiscordWebhook(DiscordWebhook):
         embed.set_title(title)
         embed.set_description(description)
 
+        # Markdown links
+        file_link = '**[Click here to view]({})**'.format(url)
+        deletion_link = '**[Click here to delete]({})**'.format(deletion_url)
+
         # Add URL and deletion URL fields
-        embed.add_embed_field(name='URL', value=url)
-        embed.add_embed_field(name='Deletion URL', value=deletion_url)
+        embed.add_embed_field(name='URL', value=file_link)
+        embed.add_embed_field(name='Deletion URL', value=deletion_link)
 
         # Set random color
         embed.set_color(
