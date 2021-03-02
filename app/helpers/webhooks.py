@@ -5,6 +5,7 @@ class CustomDiscordWebhook(DiscordWebhook):
     def __init__(self, url=None):
         super().__init__(url)
 
+    @property
     def is_enabled(self) -> bool:
         """Checks if Discord webhook is enabled."""
         return self.url is not None and len(self.url) > 0

@@ -51,7 +51,7 @@ def upload():
     delete_url = url_for('api.delete_file', hmac_hash=hmac_hash, filename=filename, _external=True)
 
     # Send data to Discord webhook
-    if discord_webhook.is_enabled():
+    if discord_webhook.is_enabled:
         discord_webhook.embed(
             title='New file has been uploaded!',
             description=file_url,
@@ -108,7 +108,7 @@ def shorten():
     delete_url = url_for('api.delete_url', hmac_hash=hmac_hash, token=token, _external=True)
 
     # Send data to Discord webhook
-    if discord_webhook.is_enabled():
+    if discord_webhook.is_enabled:
         discord_webhook.embed(
             title='URL has been shortened!',
             description='{} => {}'.format(url, short_url),
