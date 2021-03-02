@@ -41,13 +41,3 @@ class CustomDiscordWebhook(DiscordWebhook):
 
         # Add embed to webhook
         self.add_embed(embed)
-
-    def execute(self):
-        e = super().execute()
-
-        # Clean up embeds list after execute()
-        embeds = self.get_embeds()
-        for i, embed in enumerate(embeds):
-            self.remove_embed(i)
-
-        return e

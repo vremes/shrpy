@@ -59,7 +59,7 @@ def upload():
             deletion_url=delete_url,
             is_file=True
         )
-        discord_webhook.execute()
+        discord_webhook.execute(remove_embeds=True)
 
     # Return JSON
     return jsonify(
@@ -115,7 +115,7 @@ def shorten():
             url=short_url,
             deletion_url=delete_url
         )
-        discord_webhook.execute()
+        discord_webhook.execute(remove_embeds=True)
 
     return jsonify(
         {
