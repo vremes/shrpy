@@ -63,6 +63,7 @@ class File:
     def sharex_config() -> dict:
         """Returns the configuration for ShareX as dictionary."""
         cfg = {
+            "Name": "{} (File uploader)".format(flask.request.host),
             "Version": "1.0.0",
             "DestinationType": "ImageUploader, FileUploader",
             "RequestMethod": "POST",

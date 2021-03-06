@@ -70,6 +70,7 @@ class ShortUrl(_ShortUrl):
     @staticmethod
     def sharex_config() -> dict:
         cfg = {
+            "Name": "{} (URL shortener)".format(flask.request.host),
             "Version": "1.0.0",
             "DestinationType": "URLShortener",
             "RequestMethod": "POST",
