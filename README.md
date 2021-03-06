@@ -2,11 +2,9 @@
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/vremes/shrpy.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/vremes/shrpy/context:python)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/vremes/shrpy.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/vremes/shrpy/alerts/)
 
-[![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/vremes/shrpy/tree/master)
-
 [ShareX](https://getsharex.com/) custom uploader/destination server written in Python (Flask).
 
-I created this mostly for my personal use, but if you have any suggestions, ideas or improvements feel free to open a new issue.
+I created this mostly for my personal use, but if you have any suggestions, ideas or improvements feel free to open a new issue (pull requests are also welcome).
 
 # Setup
 1. Install requirements: `pip3 install -r requirements.txt`
