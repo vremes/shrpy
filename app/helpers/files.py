@@ -12,14 +12,21 @@ class File:
         if isinstance(file_instance, FileStorage) is False:
             raise Exception("file_instance should be instance of FileStorage from flask.Request.files")
 
-        self.file = file_instance
+        # Private FileStorage instance
+        self.__file = file_instance
+
         self.custom_filename = None
         self.use_original_filename = False
 
-        # splitext returns tuple ('my-file', '.txt')
-        self._filename_tuple = os.path.splitext(self.file.filename.lower())
-        self.original_filename = self._filename_tuple[0]
-        self.extension = self._filename_tuple[1]
+        # Convert arbitrary filename to secure version
+        self.filename = secure_filename(self.__file.filename.lower())
+
+        # Split filename to tuple (filename, ext)
+        self.__filename_tuple = os.path.splitext(self.filename)
+
+        # Set original filename and extension
+        self.original_filename = self.__filename_tuple[0]
+        self.extension = self.__filename_tuple[1]
 
     def get_filename(self, nbytes=12) -> str:
         """Returns custom filename, generated using `secrets.token_urlsafe`."""
@@ -27,11 +34,9 @@ class File:
             custom_filename = secrets.token_urlsafe(nbytes)
 
             if self.use_original_filename:
-                secure_og_filename = secure_filename(self.original_filename[:18])
-                self.custom_filename = '{}-{}{}'.format(custom_filename, secure_og_filename, self.extension)
-                return self.custom_filename
-
-            self.custom_filename = '{}{}'.format(custom_filename, self.extension)
+                self.custom_filename = '{}-{}{}'.format(custom_filename, self.original_filename[:18], self.extension)
+            else:
+                self.custom_filename = '{}{}'.format(custom_filename, self.extension)
 
         return self.custom_filename
 
@@ -45,7 +50,7 @@ class File:
             os.makedirs(save_directory)
 
         save_path = safe_join(save_directory, self.get_filename())
-        self.file.save(save_path)
+        self.__file.save(save_path)
 
     @staticmethod
     def delete(filename: str) -> bool:
