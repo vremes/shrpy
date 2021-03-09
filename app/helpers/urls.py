@@ -4,10 +4,14 @@ import secrets
 from typing import Union
 from urllib.request import urlparse
 
-class _ShortUrl:
+class ShortUrl:
     def __init__(self, url=None):
         self.url = url
         self.token = None
+
+        # Database connection
+        self.db = self.__get_db()
+        self.cursor = self.db.cursor()
 
     def get_token(self, nbytes=6) -> str:
         if self.token is None:
@@ -37,12 +41,6 @@ class _ShortUrl:
         except IndexError:
             return False
 
-class ShortUrl(_ShortUrl):
-    def __init__(self, url=None):
-        self.db = self.__get_db()
-        self.cursor = self.db.cursor()
-        super().__init__(url)
-
     def add(self):
         self.cursor.execute("INSERT INTO urls VALUES (?, ?)", (
             self.get_token(),
@@ -58,7 +56,7 @@ class ShortUrl(_ShortUrl):
         if row is None:
             return None
         return row[0]
-    
+
     @classmethod
     def delete(cls, token: str) -> bool:
         """DELETEs URL using given token from database."""
