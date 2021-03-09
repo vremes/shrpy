@@ -10,21 +10,14 @@ class FileDeletionScheduler:
         self.days_threshold = config.DELETE_THRESHOLD_DAYS
         self.file_extensions_tuple = tuple(config.ALLOWED_EXTENSIONS)
 
-    def get_stale_files(self) -> list:
-        """Returns a list of files that are older than `config.DELETE_THRESHOLD_DAYS`."""
-        stale_files = []
+    def get_files(self) -> list:
+        """Returns a list of files from `config.UPLOAD_DIR` that match `config.ALLOWED_EXTENSIONS`"""
+        files = []
 
-        if self.days_threshold == 0:
-            return stale_files
-
-        if os.path.isdir(self.upload_directory) is False:
-            os.makedirs(self.upload_directory)
-
-        file_list = []
-
+        # Loop through all files in upload directory
         for f in os.listdir(self.upload_directory):
 
-            # Make sure file still exists and it is actually a file (not a directory!)
+            # Make sure file is actually a file (not a directory!)
             file_path = os.path.join(self.upload_directory, f)
             if os.path.isfile(file_path) is False:
                 continue
@@ -34,22 +27,29 @@ class FileDeletionScheduler:
                 continue
 
             # Everything is OK, append the file to our list
-            file_list.append(f)
+            files.append(file_path)
 
-        if len(file_list) == 0:
+        return files
+
+    def get_stale_files(self) -> list:
+        """Returns a list of files that are older than `config.DELETE_THRESHOLD_DAYS`."""
+        stale_files = []
+        files = self.get_files()
+
+        if len(files) == 0:
             return stale_files
 
         current_date = datetime.datetime.today()
 
-        for f in file_list:
-            file_path = os.path.join(self.upload_directory, f)
-            file_modification_time = os.path.getmtime(file_path)
+        # Loop through files and check if modification date difference exceeds threshold
+        for f in files:
+            file_modification_time = os.path.getmtime(f)
             file_modification_date = datetime.datetime.fromtimestamp(file_modification_time)
 
             date_difference = current_date - file_modification_date
 
             if date_difference.days >= self.days_threshold:
-                stale_files.append(file_path)
+                stale_files.append(f)
 
         return stale_files
 
@@ -64,6 +64,9 @@ class FileDeletionScheduler:
         """Adds `delete_stale_files` job to scheduler and calls `scheduler.start()`."""
         if isinstance(self.days_threshold, int) is False or self.days_threshold == 0:
             return
+
+        if os.path.isdir(self.upload_directory) is False:
+            os.makedirs(self.upload_directory)
 
         self.scheduler.add_job(func=self.delete_stale_files, trigger='interval', minutes=60)
         self.scheduler.start()
