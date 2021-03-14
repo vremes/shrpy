@@ -4,6 +4,7 @@ import hashlib
 from app import config
 from random import randint
 from functools import wraps
+from http import HTTPStatus
 from werkzeug.security import safe_str_cmp
 
 def create_hmac_hash(hmac_data: str, secret_key: str = None) -> str:
@@ -48,7 +49,7 @@ def auth_required(f):
         if config.UPLOAD_PASSWORD is not None:
             authorization_header = flask.request.headers.get('Authorization')
             if authorization_header is None or safe_str_cmp(config.UPLOAD_PASSWORD, authorization_header) is False:
-                return flask.abort(401)
+                return flask.abort(HTTPStatus.UNAUTHORIZED)
         return f(*args, **kwargs)
     return decorated_function
 
