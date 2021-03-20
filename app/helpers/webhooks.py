@@ -1,5 +1,10 @@
+from enum import Enum
 from app.helpers.utils import random_hex
 from discord_webhook import DiscordEmbed, DiscordWebhook
+
+class EmbedType(Enum):
+    FILE = 0
+    SHORT_URL = 1
 
 class CustomDiscordWebhook(DiscordWebhook):
     def __init__(self, url=None):
@@ -41,3 +46,28 @@ class CustomDiscordWebhook(DiscordWebhook):
 
         # Add embed to webhook
         self.add_embed(embed)
+
+    def send(self, url: str, delete_url: str, embed_type: int = EmbedType.FILE, **kwargs) -> None:
+        """Creates DiscordEmbed instance and sends it to the webhook"""
+        if self.is_enabled is False:
+            return None
+
+        if embed_type == EmbedType.FILE:
+            title = 'New file has been uploaded!'
+            description = url
+        elif embed_type == EmbedType.SHORT_URL:
+            title = 'URL has been shortened!'
+            description = '{} => {}'.format(
+                kwargs.get('original_url'),
+                kwargs.get('shortened_url')
+            )
+
+        self.embed(
+            title=title,
+            description=description,
+            url=url,
+            deletion_url=delete_url,
+            is_file=embed_type == EmbedType.FILE
+        )
+
+        self.execute(remove_embeds=True)

@@ -3,6 +3,7 @@ from app.helpers import utils
 from app import discord_webhook
 from app.helpers.files import File
 from app.helpers.urls import ShortUrl
+from app.helpers.webhooks import EmbedType
 from flask import (
     Blueprint, request, abort, current_app, jsonify,
     url_for, render_template_string
@@ -53,15 +54,7 @@ def upload():
     delete_url = url_for('api.delete_file', hmac_hash=hmac_hash, filename=filename, _external=True)
 
     # Send data to Discord webhook
-    if discord_webhook.is_enabled:
-        discord_webhook.embed(
-            title='New file has been uploaded!',
-            description=file_url,
-            url=file_url,
-            deletion_url=delete_url,
-            is_file=True
-        )
-        discord_webhook.execute(remove_embeds=True)
+    discord_webhook.send(file_url, delete_url, EmbedType.FILE)
 
     # Return JSON
     return jsonify(
@@ -110,14 +103,7 @@ def shorten():
     delete_url = url_for('api.delete_url', hmac_hash=hmac_hash, token=token, _external=True)
 
     # Send data to Discord webhook
-    if discord_webhook.is_enabled:
-        discord_webhook.embed(
-            title='URL has been shortened!',
-            description='{} => {}'.format(url, short_url),
-            url=short_url,
-            deletion_url=delete_url
-        )
-        discord_webhook.execute(remove_embeds=True)
+    discord_webhook.send(short_url, delete_url, EmbedType.SHORT_URL, original_url=url, shortened_url=short_url)
 
     return jsonify(
         {
