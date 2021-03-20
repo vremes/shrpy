@@ -15,7 +15,7 @@ class CustomDiscordWebhook(DiscordWebhook):
         """Checks if Discord webhook is enabled."""
         return self.url is not None and len(self.url) > 0
 
-    def embed(self, title: str, description: str, url: str, deletion_url: str, is_file=False):
+    def embed(self, title: str, description: str, url: str, deletion_url: str, embed_type = EmbedType.FILE):
         """Creates DiscordEmbed instance using given arguments and adds it to webhook."""
         # Discord embed instance
         embed = DiscordEmbed()
@@ -38,7 +38,7 @@ class CustomDiscordWebhook(DiscordWebhook):
         )
 
         # Add image to embed if url is image
-        if is_file and url.endswith(('.mp4', '.webm')) is False:
+        if embed_type == EmbedType.FILE:
             embed.set_image(url=url)
 
         # Add timestamp to embed
@@ -67,7 +67,7 @@ class CustomDiscordWebhook(DiscordWebhook):
             description=description,
             url=url,
             deletion_url=delete_url,
-            is_file=embed_type == EmbedType.FILE
+            embed_type=embed_type
         )
 
         self.execute(remove_embeds=True)
