@@ -34,7 +34,7 @@ def upload():
 
     # Check if file is allowed
     if f.is_allowed() is False:
-        return utils.response(HTTPStatus.BAD_REQUEST, 'Invalid file type')
+        return utils.response(HTTPStatus.UNPROCESSABLE_ENTITY, 'Invalid file type')
 
     # Convert HTTP header value to boolean
     use_og_filename = request.headers.get('X-Use-Original-Filename', type=int) == 1
@@ -73,7 +73,7 @@ def delete_file(hmac_hash, filename):
         return abort(HTTPStatus.NOT_FOUND)
 
     if File.delete(filename) is False:
-        return abort(HTTPStatus.NOT_FOUND)
+        return abort(HTTPStatus.GONE)
 
     message = render_template_string('{{ filename }} has been deleted, you can now close this page', filename=filename)
     return utils.response(message=message)
@@ -89,7 +89,7 @@ def shorten():
     short_url = ShortUrl(url)
 
     if short_url.is_valid() is False:
-        return utils.response(HTTPStatus.BAD_REQUEST, 'Invalid URL')
+        return utils.response(HTTPStatus.UNPROCESSABLE_ENTITY, 'Invalid URL')
 
     # Add URL to database
     short_url.add()
@@ -121,6 +121,6 @@ def delete_url(hmac_hash, token):
         return abort(HTTPStatus.NOT_FOUND)
 
     if ShortUrl.delete(token) is False:
-        return abort(HTTPStatus.NOT_FOUND)
+        return abort(HTTPStatus.GONE)
 
     return utils.response(message='This short URL has been deleted, you can now close this page')
