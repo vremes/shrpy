@@ -1,3 +1,4 @@
+from http import HTTPStatus
 from app.helpers.urls import ShortUrl
 from flask import Blueprint, send_from_directory, current_app, redirect, abort
 
@@ -14,6 +15,6 @@ def short_url(token):
     short_url = ShortUrl.get_by_token(token)
 
     if short_url is None:
-        abort(404)
+        return abort(HTTPStatus.NOT_FOUND)
 
     return redirect(short_url)
