@@ -18,7 +18,7 @@ DELETE_THRESHOLD_DAYS = 0
 
 # List of Discord webhooks https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks
 # leave this to empty list if you don't want to use Discord webhooks
-DISCORD_WEBHOOKS = ['https://discord.com/api/webhooks/815240788992065566/jUvvtRAfyQ9m5-bOvdIagte_l8cnijJ4tPkRwXrOHA2jPCJRamTFqmQxtcog_8VreAH4']
+DISCORD_WEBHOOKS = []
 
 # Timeout for discord webhook, in seconds
 DISCORD_WEBHOOK_TIMEOUT = 5
