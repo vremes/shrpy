@@ -16,6 +16,9 @@ def create_app():
     # Set Discord webhook URLs
     discord_webhook.url = app.config.get('DISCORD_WEBHOOKS')
 
+    # Set discord webhook timeout
+    discord_webhook.timeout = app.config.get('DISCORD_WEBHOOK_TIMEOUT')
+
     # Setup automatic file deletion
     file_deletion_scheduler.setup()
 
