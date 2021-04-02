@@ -1,6 +1,10 @@
+import logging
 from enum import Enum
+from requests.exceptions import Timeout
 from app.helpers.utils import random_hex
 from discord_webhook import DiscordEmbed, DiscordWebhook
+
+logger = logging.getLogger('discord_webhook')
 
 class EmbedType(Enum):
     FILE = 0
@@ -70,4 +74,10 @@ class CustomDiscordWebhook(DiscordWebhook):
             embed_type=embed_type
         )
 
-        self.execute(remove_embeds=True)
+        try:
+            self.execute(remove_embeds=True)
+        except Timeout as e:
+            logger.error('requests.exceptions.Timeout exception has occurred: {} - {}'.format(
+                e.request.method,
+                e.request.url
+            ))
