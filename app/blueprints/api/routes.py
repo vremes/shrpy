@@ -57,12 +57,7 @@ def upload():
     discord_webhook.send(file_url, delete_url, EmbedType.FILE)
 
     # Return JSON
-    return jsonify(
-            {
-                'url': file_url,
-                'delete_url': delete_url
-            }
-        )
+    return jsonify(url=file_url, delete_url=delete_url)
 
 @api.route('/delete-file/<hmac_hash>/<filename>')
 def delete_file(hmac_hash, filename):
@@ -105,12 +100,7 @@ def shorten():
     # Send data to Discord webhook
     discord_webhook.send(short_url, delete_url, EmbedType.SHORT_URL, original_url=url, shortened_url=short_url)
 
-    return jsonify(
-        {
-            'url': short_url,
-            'delete_url': delete_url
-        }
-    )
+    return jsonify(url=short_url, delete_url=delete_url)
 
 @api.route('/delete-short-url/<hmac_hash>/<token>')
 def delete_url(hmac_hash, token):

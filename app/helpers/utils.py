@@ -29,17 +29,8 @@ def response(status_code: int = 200, status: str = "OK", **kwargs) -> flask.Resp
     :param **kwargs: Arbitrary keyword arguments, these will be added to the returned `Response` as JSON key/value pairs
     :return flask.jsonify (flask.Response)
     """
-    response_dict = {
-        "status_code": status_code,
-        "status": status,
-    }
-
-    for key, value in kwargs.items():
-        response_dict[key] = value
-
-    resp = flask.jsonify(response_dict)
+    resp = flask.jsonify(status_code=status_code, status=status, **kwargs)
     resp.status_code = status_code
-
     return resp
 
 def auth_required(f):
