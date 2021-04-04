@@ -13,9 +13,9 @@ class ShortUrl:
         self.db = self.__get_db()
         self.cursor = self.db.cursor()
 
-    def get_token(self, nbytes=6) -> str:
+    def get_token(self) -> str:
         if self.token is None:
-            self.token = secrets.token_urlsafe(nbytes)
+            self.token = secrets.token_urlsafe(6)
         return self.token
 
     def get_url(self) -> Union[str, None]:

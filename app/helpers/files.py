@@ -28,10 +28,10 @@ class File:
         self.original_filename = self.__filename_tuple[0]
         self.extension = self.__filename_tuple[1]
 
-    def get_filename(self, nbytes=12) -> str:
+    def get_filename(self) -> str:
         """Returns custom filename, generated using `secrets.token_urlsafe`."""
         if self.custom_filename is None:
-            custom_filename = secrets.token_urlsafe(nbytes)
+            custom_filename = secrets.token_urlsafe(12)
 
             if self.use_original_filename:
                 self.custom_filename = '{}-{}{}'.format(custom_filename, self.original_filename[:18], self.extension)
