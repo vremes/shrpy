@@ -68,6 +68,8 @@ Config file is located in [/app/config.py](/app/config.py)
 
 `DISCORD_WEBHOOKS`: A list of Discord webhook URLs, leave this to empty list to disable this feature.
 
+`DISCORD_WEBHOOK_TIMEOUT`: Timeout for Discord webhook requests, in seconds.
+
 ## Headers
 
 `Authorization`: The password for uploading files (`UPLOAD_PASSWORD` in config.py file), simply ignore this header if you don't use a password.
