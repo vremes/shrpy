@@ -23,7 +23,7 @@ class FileDeletionScheduler:
                 continue
             
             # If file uses wrong extension, skip it
-            if f.lower().endswith(self.file_extensions_tuple) is False:
+            if f.lower().endswith(self.file_extensions_tuple) is False or not self.file_extensions_tuple:
                 continue
 
             # Everything is OK, append the file to our list

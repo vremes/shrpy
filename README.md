@@ -60,7 +60,7 @@ Config file is located in [/app/config.py](/app/config.py)
 
 `UPLOAD_DIR`: Path to the directory where uploaded files will be saved to.
 
-`ALLOWED_EXTENSIONS`: A list of allowed file extensions.
+`ALLOWED_EXTENSIONS`: A list of allowed file extensions, set this to empty list if you want to allow all file extensions.
 
 `UPLOAD_PASSWORD`: Password (str) for `/api/upload` endpoint, you can leave it to `None` if you do not want to use a password.
 

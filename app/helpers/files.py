@@ -42,6 +42,8 @@ class File:
 
     def is_allowed(self) -> bool:
         """Check if file is allowed, based on `config.ALLOWED_EXTENSIONS`."""
+        if not config.ALLOWED_EXTENSIONS:
+            return True
         return self.extension in config.ALLOWED_EXTENSIONS
 
     def save(self, save_directory = config.UPLOAD_DIR) -> None:
