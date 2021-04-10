@@ -19,10 +19,20 @@ class CustomDiscordWebhook(DiscordWebhook):
         """Checks if Discord webhook is enabled."""
         return self.url is not None and len(self.url) > 0
 
-    def embed(self, title: str, description: str, url: str, deletion_url: str, embed_type = EmbedType.FILE):
+    def embed(self, url: str, deletion_url: str, embed_type = EmbedType.FILE, **kwargs):
         """Creates DiscordEmbed instance using given arguments and adds it to webhook."""
         # Discord embed instance
         embed = DiscordEmbed()
+
+        if embed_type == EmbedType.FILE:
+            title = 'New file has been uploaded!'
+            description = url
+        elif embed_type == EmbedType.SHORT_URL:
+            title = 'URL has been shortened!'
+            description = '{} => {}'.format(
+                kwargs.get('original_url'),
+                kwargs.get('shortened_url')
+            )
 
         # Set title and description
         embed.set_title(title)
@@ -51,28 +61,10 @@ class CustomDiscordWebhook(DiscordWebhook):
         # Add embed to webhook
         self.add_embed(embed)
 
-    def send(self, url: str, delete_url: str, embed_type: int = EmbedType.FILE, **kwargs) -> None:
-        """Creates DiscordEmbed instance and sends it to the webhook"""
+    def send(self) -> None:
+        """Executes the webhook and handles Timeout exception"""
         if self.is_enabled is False:
             return None
-
-        if embed_type == EmbedType.FILE:
-            title = 'New file has been uploaded!'
-            description = url
-        elif embed_type == EmbedType.SHORT_URL:
-            title = 'URL has been shortened!'
-            description = '{} => {}'.format(
-                kwargs.get('original_url'),
-                kwargs.get('shortened_url')
-            )
-
-        self.embed(
-            title=title,
-            description=description,
-            url=url,
-            deletion_url=delete_url,
-            embed_type=embed_type
-        )
 
         try:
             self.execute(remove_embeds=True)
