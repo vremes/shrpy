@@ -14,5 +14,4 @@ application.secret_key = os.getenv('FLASK_SECRET')
 if __name__ == '__main__':
     application.secret_key = 'dev'
     application.debug = True
-    application.config['DEBUG'] = True
     application.run()
