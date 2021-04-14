@@ -1,20 +1,12 @@
-from http import HTTPStatus
-from app.helpers.urls import ShortUrl
-from flask import Blueprint, send_from_directory, current_app, redirect, abort
+from flask import Blueprint
+from app.helpers.services import ShortUrlService, FileService
 
 main = Blueprint('main', __name__)
 
 @main.route('/uploads/<filename>')
 def uploads(filename):
-    upload_dir = current_app.config['UPLOAD_DIR']
-
-    return send_from_directory(upload_dir, filename)
+    return FileService.get_by_filename(filename)
 
 @main.route('/url/<token>')
 def short_url(token):
-    short_url = ShortUrl.get_by_token(token)
-
-    if short_url is None:
-        return abort(HTTPStatus.NOT_FOUND)
-
-    return redirect(short_url)
+    return ShortUrlService.get_by_token(token)
