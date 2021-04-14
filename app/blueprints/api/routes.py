@@ -36,9 +36,8 @@ def upload():
     if f.is_allowed() is False:
         return utils.response(HTTPStatus.UNPROCESSABLE_ENTITY, 'Invalid file type')
 
-    # Convert HTTP header value to boolean
-    use_og_filename = request.headers.get('X-Use-Original-Filename', type=int) == 1
-    f.use_original_filename = use_og_filename
+    # Set File.use_original_filename to True/False
+    f.use_original_filename = bool(request.headers.get('X-Use-Original-Filename', type=int))
 
     # Get the filename
     filename = f.get_filename()
