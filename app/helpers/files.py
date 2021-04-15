@@ -1,5 +1,4 @@
 import os
-import flask
 import secrets
 from app import config
 from werkzeug.security import safe_join
@@ -65,25 +64,3 @@ class File:
         os.remove(file_path)
 
         return True
-
-    @staticmethod
-    def sharex_config() -> dict:
-        """Returns the configuration for ShareX as dictionary."""
-        cfg = {
-            "Name": "{} (File uploader)".format(flask.request.host),
-            "Version": "1.0.0",
-            "DestinationType": "ImageUploader, FileUploader",
-            "RequestMethod": "POST",
-            "RequestURL": flask.url_for('api.upload', _external=True),
-            "Body": "MultipartFormData",
-            "FileFormName": "file",
-            "URL": "$json:url$",
-            "DeletionURL": "$json:delete_url$",
-            "Headers": {
-                "Authorization": "YOUR-UPLOAD-PASSWORD-HERE",
-                "X-Use-Original-Filename": 1,
-            },
-            "ErrorMessage": "$json:status$"
-        }
-
-        return cfg

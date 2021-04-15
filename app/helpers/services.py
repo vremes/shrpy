@@ -63,7 +63,22 @@ class FileService:
     
     @staticmethod
     def config() -> flask.Response:
-        cfg = File.sharex_config()
+        cfg = {
+            "Name": "{} (File uploader)".format(flask.request.host),
+            "Version": "1.0.0",
+            "DestinationType": "ImageUploader, FileUploader",
+            "RequestMethod": "POST",
+            "RequestURL": flask.url_for('api.upload', _external=True),
+            "Body": "MultipartFormData",
+            "FileFormName": "file",
+            "URL": "$json:url$",
+            "DeletionURL": "$json:delete_url$",
+            "Headers": {
+                "Authorization": "YOUR-UPLOAD-PASSWORD-HERE",
+                "X-Use-Original-Filename": 1,
+            },
+            "ErrorMessage": "$json:status$"
+        }
         return flask.jsonify(cfg)
 
     @staticmethod
@@ -119,7 +134,22 @@ class ShortUrlService:
 
     @staticmethod
     def config() -> flask.Response:
-        cfg = ShortUrl.sharex_config()
+        cfg = {
+            "Name": "{} (URL shortener)".format(flask.request.host),
+            "Version": "1.0.0",
+            "DestinationType": "URLShortener",
+            "RequestMethod": "POST",
+            "Body": "MultipartFormData",
+            "RequestURL": flask.url_for('api.shorten', _external=True),
+            "Headers": {
+                "Authorization": "YOUR-UPLOAD-PASSWORD-HERE"
+            },
+            "Arguments": {
+                "url": "$input$"
+            },
+            "URL": "$json:url$",
+            "DeletionURL": "$json:delete_url$"
+        }
         return flask.jsonify(cfg)
 
     @staticmethod

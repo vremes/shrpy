@@ -1,4 +1,3 @@
-import flask
 import sqlite3
 import secrets
 from typing import Union
@@ -64,26 +63,6 @@ class ShortUrl:
         execute = instance.cursor.execute("DELETE FROM urls WHERE token = ?", (token,))
         instance.db.commit()
         return execute.rowcount > 0
-
-    @staticmethod
-    def sharex_config() -> dict:
-        cfg = {
-            "Name": "{} (URL shortener)".format(flask.request.host),
-            "Version": "1.0.0",
-            "DestinationType": "URLShortener",
-            "RequestMethod": "POST",
-            "Body": "MultipartFormData",
-            "RequestURL": flask.url_for('api.shorten', _external=True),
-            "Headers": {
-                "Authorization": "YOUR-UPLOAD-PASSWORD-HERE"
-            },
-            "Arguments": {
-                "url": "$input$"
-            },
-            "URL": "$json:url$",
-            "DeletionURL": "$json:delete_url$"
-        }
-        return cfg
 
     def __get_db(self):
         conn = sqlite3.connect('urls.db')
