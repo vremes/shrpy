@@ -11,21 +11,17 @@ class File:
         if isinstance(file_instance, FileStorage) is False:
             raise Exception("file_instance should be instance of FileStorage from flask.Request.files")
 
-        # Private FileStorage instance
-        self.__file = file_instance
-
         self.custom_filename = None
         self.use_original_filename = False
 
-        # Convert arbitrary filename to secure version
-        self.filename = secure_filename(self.__file.filename.lower())
+        # Private FileStorage instance
+        self.__file = file_instance
 
-        # Split filename to tuple (filename, ext)
-        self.__filename_tuple = os.path.splitext(self.filename)
+        # Set arbitrary FileStorage.filename to lowercase and secure version of itself
+        self.__file.filename = secure_filename(self.__file.filename.lower())
 
-        # Set original filename and extension
-        self.original_filename = self.__filename_tuple[0]
-        self.extension = self.__filename_tuple[1]
+        # Split filename to tuple (filename, ext) and assign them to variables
+        self.filename, self.extension = os.path.splitext(self.__file.filename)
 
     def get_filename(self) -> str:
         """Returns custom filename, generated using `secrets.token_urlsafe`."""
@@ -33,7 +29,7 @@ class File:
             custom_filename = secrets.token_urlsafe(12)
 
             if self.use_original_filename:
-                self.custom_filename = '{}-{}{}'.format(custom_filename, self.original_filename[:18], self.extension)
+                self.custom_filename = '{}-{}{}'.format(custom_filename, self.filename[:18], self.extension)
             else:
                 self.custom_filename = '{}{}'.format(custom_filename, self.extension)
 
