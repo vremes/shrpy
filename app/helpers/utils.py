@@ -21,7 +21,7 @@ def is_valid_hash(hash_a: str, hash_b: str) -> bool:
     """Compares two hashes using `hmac.compare_digest`."""
     return hmac.compare_digest(hash_a, hash_b)
 
-def response(status_code: int = 200, status: str = "OK", **kwargs) -> flask.Response:
+def response(status_code: int = HTTPStatus.OK, status: str = HTTPStatus.OK.phrase, **kwargs) -> flask.Response:
     """Wrapper for `flask.jsonify`
 
     :param int status_code: HTTP status code, defaults to `200`
