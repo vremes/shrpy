@@ -1,8 +1,8 @@
 from flask import Flask
 from app.helpers.utils import response
 from werkzeug.exceptions import HTTPException
-from app.helpers.webhooks import CustomDiscordWebhook
 from app.helpers.delete_files import FileDeletionScheduler
+from app.helpers.discord.webhooks import CustomDiscordWebhook
 
 discord_webhook = CustomDiscordWebhook()
 file_deletion_scheduler = FileDeletionScheduler()

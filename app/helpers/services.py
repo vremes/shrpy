@@ -4,7 +4,7 @@ from app import discord_webhook
 from app.helpers import utils
 from app.helpers.files import File
 from app.helpers.urls import ShortUrl
-from app.helpers.webhooks import EmbedType
+from app.helpers.discord.webhooks import EmbedType
 
 class FileService:
     @staticmethod
@@ -39,7 +39,7 @@ class FileService:
 
         # Send data to Discord webhook
         if discord_webhook.is_enabled:
-            discord_webhook.embed(file_url, delete_url, EmbedType.FILE)
+            discord_webhook.embed(EmbedType.FILE, file_url=file_url, delete_url=delete_url)
             discord_webhook.send()
 
         # Return JSON
@@ -112,7 +112,7 @@ class ShortUrlService:
 
         # Send data to Discord webhook
         if discord_webhook.is_enabled:
-            discord_webhook.embed(short_url, delete_url, EmbedType.SHORT_URL, original_url=url, shortened_url=short_url)
+            discord_webhook.embed(EmbedType.SHORT_URL, file_url=short_url, delete_url=delete_url, original_url=url, shortened_url=short_url)
             discord_webhook.send()
 
         return flask.jsonify(url=short_url, delete_url=delete_url)
