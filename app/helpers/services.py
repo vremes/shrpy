@@ -82,7 +82,8 @@ class FileService:
         return flask.jsonify(cfg)
 
     @staticmethod
-    def get_by_filename(filename: str) -> flask.Response:
+    def get_by_filename() -> flask.Response:
+        filename = flask.request.view_args.get('filename')
         upload_dir = flask.current_app.config['UPLOAD_DIR']
         return flask.send_from_directory(upload_dir, filename)
 
@@ -153,7 +154,8 @@ class ShortUrlService:
         return flask.jsonify(cfg)
 
     @staticmethod
-    def get_by_token(token: str) -> flask.Response:
+    def get_by_token() -> flask.Response:
+        token = flask.request.view_args.get('token')
         short_url = ShortUrl.get_by_token(token)
 
         if short_url is None:
