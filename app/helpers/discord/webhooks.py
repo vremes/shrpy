@@ -6,8 +6,8 @@ from app.helpers.discord.embeds import EmbedType, FileEmbed, ShortUrlEmbed
 logger = logging.getLogger('discord_webhook')
 
 class CustomDiscordWebhook(DiscordWebhook):
-    def __init__(self, url=None):
-        super().__init__(url)
+    def __init__(self, url=None, **kwargs):
+        super().__init__(url, **kwargs)
 
     @property
     def is_enabled(self) -> bool:
