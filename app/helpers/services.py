@@ -4,6 +4,7 @@ from app import discord_webhook
 from app.helpers import utils
 from app.helpers.files import File
 from app.helpers.urls import ShortUrl
+from app.helpers.utils import Message
 from app.helpers.discord.webhooks import EmbedType
 
 class FileService:
@@ -12,14 +13,14 @@ class FileService:
         uploaded_file = flask.request.files.get('file')
         
         if uploaded_file is None:
-            return utils.response(HTTPStatus.BAD_REQUEST, 'Invalid file')
+            return utils.response(HTTPStatus.BAD_REQUEST, Message.INVALID_FILE)
 
         # Our own class which utilises werkzeug.datastructures.FileStorage
         f = File(uploaded_file)
 
         # Check if file is allowed
         if f.is_allowed() is False:
-            return utils.response(HTTPStatus.UNPROCESSABLE_ENTITY, 'Invalid file type')
+            return utils.response(HTTPStatus.UNPROCESSABLE_ENTITY, Message.INVALID_FILE_TYPE)
 
         # Set File.use_original_filename to True/False
         f.use_original_filename = bool(flask.request.headers.get('X-Use-Original-Filename', type=int))
@@ -58,8 +59,7 @@ class FileService:
         if File.delete(filename) is False:
             return flask.abort(HTTPStatus.GONE)
 
-        message = flask.render_template_string('{{ filename }} has been deleted, you can now close this page', filename=filename)
-        return utils.response(message=message)
+        return utils.response(message=Message.FILE_DELETED)
     
     @staticmethod
     def config() -> flask.Response:
@@ -93,12 +93,12 @@ class ShortUrlService:
         url = flask.request.form.get('url')
 
         if url is None:
-            return utils.response(HTTPStatus.BAD_REQUEST, 'Invalid URL')
+            return utils.response(HTTPStatus.BAD_REQUEST, Message.INVALID_URL)
 
         short_url = ShortUrl(url)
 
         if short_url.is_valid() is False:
-            return utils.response(HTTPStatus.UNPROCESSABLE_ENTITY, 'Invalid URL')
+            return utils.response(HTTPStatus.UNPROCESSABLE_ENTITY, Message.INVALID_URL)
 
         # Add URL to database
         short_url.add()
@@ -131,7 +131,7 @@ class ShortUrlService:
         if ShortUrl.delete(token) is False:
             return flask.abort(HTTPStatus.GONE)
 
-        return utils.response(message='This short URL has been deleted, you can now close this page')
+        return utils.response(message=Message.URL_DELETED)
 
     @staticmethod
     def config() -> flask.Response:

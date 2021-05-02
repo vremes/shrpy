@@ -1,6 +1,7 @@
 import hmac
 import flask
 import hashlib
+from enum import Enum
 from app import config
 from random import randint
 from functools import wraps
@@ -46,3 +47,21 @@ def auth_required(f):
 
 def random_hex():
     return randint(0, 0xffffff)
+
+class Message(str, Enum):
+    # Services
+    INVALID_FILE = 'Invalid file'
+    INVALID_FILE_TYPE = 'Invalid file type'
+    FILE_DELETED = 'This file has been deleted, you can now close this page'
+
+    INVALID_URL = 'Invalid URL'
+    URL_DELETED = 'This short URL has been deleted, you can now close this page'
+
+    # Embeds
+    URL = 'URL'
+    DELETION_URL = 'Deletion URL'
+    CLICK_HERE_TO_VIEW = 'Click here to view'
+    CLICK_HERE_TO_DELETE = 'Click here to delete'
+
+    FILE_UPLOADED = 'New file has been uploaded!'
+    URL_SHORTENED = 'URL has been shortened!'
