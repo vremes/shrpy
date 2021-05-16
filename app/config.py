@@ -22,3 +22,6 @@ DISCORD_WEBHOOKS: list = []
 
 # Timeout for discord webhook, in seconds
 DISCORD_WEBHOOK_TIMEOUT: int = 5
+
+# The amount of bytes python-magic will read from uploaded file to determine its extension
+MAGIC_BUFFER_BYTES = 2048

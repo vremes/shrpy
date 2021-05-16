@@ -70,6 +70,8 @@ Config file is located in [/app/config.py](/app/config.py)
 
 `DISCORD_WEBHOOK_TIMEOUT`: Timeout for Discord webhook requests, in seconds.
 
+`MAGIC_BUFFER_BYTES`: The amount of bytes `python-magic` will read from uploaded file to determine its extension, the default value of `2048` should be fine.
+
 ## Headers
 
 `Authorization`: The password for uploading files (`UPLOAD_PASSWORD` in config.py file), simply ignore this header if you don't use a password.

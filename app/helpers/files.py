@@ -42,8 +42,11 @@ class File:
         if not config.ALLOWED_EXTENSIONS:
             return True
 
-        # Get file mimetype based on first 2048 bytes
-        mime = magic.from_buffer(self.__file.read(2048), mime=True).lower()
+        # Get bytes from file
+        file_bytes = self.__file.read(config.MAGIC_BUFFER_BYTES)
+
+        # Determine extension based on bytes
+        mime = magic.from_buffer(file_bytes, mime=True).lower()
 
         # Convert mimetype to extension, e.g. application/pdf becomes .pdf
         guessed_ext = mimetypes.guess_extension(mime)
@@ -56,7 +59,9 @@ class File:
             os.makedirs(save_directory)
         save_path = safe_join(save_directory, self.get_filename())
 
-        self.__file.seek(0)
+        # Set file descriptor back to beginning of the file so save works correctly
+        self.__file.seek(os.SEEK_SET)
+
         self.__file.save(save_path)
 
     @staticmethod
