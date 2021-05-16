@@ -41,7 +41,7 @@ def auth_required(f):
         if config.UPLOAD_PASSWORD:
             authorization_header = flask.request.headers.get('Authorization')
             if authorization_header is None or safe_str_cmp(config.UPLOAD_PASSWORD, authorization_header) is False:
-                return flask.abort(HTTPStatus.UNAUTHORIZED)
+                flask.abort(HTTPStatus.UNAUTHORIZED)
         return f(*args, **kwargs)
     return decorated_function
 

@@ -54,10 +54,10 @@ class FileService:
 
         # If hash does not match
         if utils.is_valid_hash(hmac_hash, new_hmac_hash) is False:
-            return flask.abort(HTTPStatus.NOT_FOUND)
+            flask.abort(HTTPStatus.NOT_FOUND)
 
         if File.delete(filename) is False:
-            return flask.abort(HTTPStatus.GONE)
+            flask.abort(HTTPStatus.GONE)
 
         return utils.response(message=Message.FILE_DELETED)
     
@@ -126,10 +126,10 @@ class ShortUrlService:
 
         # If hash does not match
         if utils.is_valid_hash(hmac_hash, new_hmac_hash) is False:
-            return flask.abort(HTTPStatus.NOT_FOUND)
+            flask.abort(HTTPStatus.NOT_FOUND)
 
         if ShortUrl.delete(token) is False:
-            return flask.abort(HTTPStatus.GONE)
+            flask.abort(HTTPStatus.GONE)
 
         return utils.response(message=Message.URL_DELETED)
 
@@ -159,6 +159,6 @@ class ShortUrlService:
         short_url = ShortUrl.get_by_token(token)
 
         if short_url is None:
-            return flask.abort(HTTPStatus.NOT_FOUND)
+            flask.abort(HTTPStatus.NOT_FOUND)
 
         return flask.redirect(short_url)
