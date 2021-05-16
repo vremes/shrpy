@@ -1,5 +1,7 @@
 import os
+import magic
 import secrets
+import mimetypes
 from app import config
 from werkzeug.security import safe_join
 from werkzeug.utils import secure_filename
@@ -39,7 +41,14 @@ class File:
         """Check if file is allowed, based on `config.ALLOWED_EXTENSIONS`."""
         if not config.ALLOWED_EXTENSIONS:
             return True
-        return self.extension in config.ALLOWED_EXTENSIONS
+
+        # Get file mimetype based on first 2048 bytes
+        mime = magic.from_buffer(self.__file.read(2048), mime=True).lower()
+
+        # Convert mimetype to extension, e.g. application/pdf becomes .pdf
+        guessed_ext = mimetypes.guess_extension(mime)
+
+        return self.extension in config.ALLOWED_EXTENSIONS and guessed_ext in config.ALLOWED_EXTENSIONS
 
     def save(self, save_directory = config.UPLOAD_DIR) -> None:
         """Saves the file to `UPLOAD_DIR`."""
