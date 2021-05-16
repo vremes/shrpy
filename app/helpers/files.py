@@ -9,7 +9,7 @@ class File:
     def __init__(self, file_instance: FileStorage):
         """Class for uploaded files which takes the `werkzeug.datastructures.FileStorage` from `flask.Request.files` as first parameter."""
         if isinstance(file_instance, FileStorage) is False:
-            raise Exception("file_instance should be instance of FileStorage from flask.Request.files")
+            raise InvalidFileException(file_instance)
 
         self.custom_filename = None
         self.use_original_filename = False
@@ -60,3 +60,13 @@ class File:
         os.remove(file_path)
 
         return True
+
+class InvalidFileException(Exception):
+    """Raised when `app.helpers.files.File` is initialized using wrong `file_instance`."""
+    def __init__(self, file_instance, *args):
+        self.file_instance = file_instance
+        super().__init__(*args)
+
+    def __str__(self):
+        file_instance_type = type(self.file_instance)
+        return f'{self.file_instance} ({file_instance_type}) is not an instance of werkzeug.datastructures.FileStorage ({FileStorage})'
