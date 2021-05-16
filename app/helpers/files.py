@@ -13,7 +13,8 @@ class File:
         if isinstance(file_instance, FileStorage) is False:
             raise InvalidFileException(file_instance)
 
-        self.custom_filename = None
+        self.filename = None
+        self.extension = None
         self.use_original_filename = False
 
         # Private FileStorage instance
@@ -22,36 +23,34 @@ class File:
         # Set arbitrary FileStorage.filename to lowercase and secure version of itself
         self.__file.filename = secure_filename(self.__file.filename.lower())
 
-        # Split filename to tuple (filename, ext) and assign them to variables
-        self.filename, self.extension = os.path.splitext(self.__file.filename)
+        # Get extension based on file content
+        self.get_extension()
 
     def get_filename(self) -> str:
         """Returns custom filename, generated using `secrets.token_urlsafe`."""
-        if self.custom_filename is None:
+        if self.filename is None:
             custom_filename = secrets.token_urlsafe(12)
 
             if self.use_original_filename:
-                self.custom_filename = '{}-{}{}'.format(custom_filename, self.filename[:18], self.extension)
+                self.filename = '{}-{}{}'.format(custom_filename, self.__file.filename[:18], self.extension)
             else:
-                self.custom_filename = '{}{}'.format(custom_filename, self.extension)
+                self.filename = '{}{}'.format(custom_filename, self.extension)
 
-        return self.custom_filename
+        return self.filename
+
+    def get_extension(self) -> str:
+        if self.extension is None:
+            file_bytes = self.__file.read(config.MAGIC_BUFFER_BYTES)
+            mime = magic.from_buffer(file_bytes, mime=True).lower()
+            self.extension = mimetypes.guess_extension(mime)
+        return self.extension
 
     def is_allowed(self) -> bool:
         """Check if file is allowed, based on `config.ALLOWED_EXTENSIONS`."""
         if not config.ALLOWED_EXTENSIONS:
             return True
 
-        # Get bytes from file
-        file_bytes = self.__file.read(config.MAGIC_BUFFER_BYTES)
-
-        # Determine extension based on bytes
-        mime = magic.from_buffer(file_bytes, mime=True).lower()
-
-        # Convert mimetype to extension, e.g. application/pdf becomes .pdf
-        guessed_ext = mimetypes.guess_extension(mime)
-
-        return self.extension in config.ALLOWED_EXTENSIONS and guessed_ext in config.ALLOWED_EXTENSIONS
+        return self.extension in config.ALLOWED_EXTENSIONS
 
     def save(self, save_directory = config.UPLOAD_DIR) -> None:
         """Saves the file to `UPLOAD_DIR`."""
