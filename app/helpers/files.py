@@ -54,8 +54,9 @@ class File:
         """Saves the file to `UPLOAD_DIR`."""
         if os.path.isdir(save_directory) is False:
             os.makedirs(save_directory)
-
         save_path = safe_join(save_directory, self.get_filename())
+
+        self.__file.seek(0)
         self.__file.save(save_path)
 
     @staticmethod
