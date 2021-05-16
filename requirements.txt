@@ -3,4 +3,4 @@ Flask == 1.1.2
 discord-webhook >= 0.13.0
 python-dotenv
 python-magic
-python-magic-bin
+python-magic-bin; platform_system == "Windows"
