@@ -65,7 +65,7 @@ class File:
         self.__file.save(save_path)
 
     def __set_filename(self):
-        custom_filename = secrets.token_urlsafe(12)
+        custom_filename = secrets.token_urlsafe(config.FILE_TOKEN_BYTES)
 
         if self.use_original_filename:
             filename = f'{custom_filename}-{self.__file.filename[:18]}'

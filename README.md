@@ -72,6 +72,10 @@ Config file is located in [/app/config.py](/app/config.py)
 
 `MAGIC_BUFFER_BYTES`: The amount of bytes `python-magic` will read from uploaded file to determine its extension, the default value of `2048` should be fine.
 
+`FILE_TOKEN_BYTES`: The amount of bytes `secrets.token_urlsafe` will use to generate filenames.
+
+`URL_TOKEN_BYTES`: The amount of bytes `secrets.token_urlsafe` will use to generate shortened URLs.
+
 ## Headers
 
 `Authorization`: The password for uploading files (`UPLOAD_PASSWORD` in config.py file), simply ignore this header if you don't use a password.

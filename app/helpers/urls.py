@@ -1,5 +1,6 @@
 import sqlite3
 import secrets
+from app import config
 from typing import Union
 from urllib.request import urlparse
 
@@ -14,7 +15,7 @@ class ShortUrl:
 
     def get_token(self) -> str:
         if self.token is None:
-            self.token = secrets.token_urlsafe(6)
+            self.token = secrets.token_urlsafe(config.URL_TOKEN_BYTES)
         return self.token
 
     def get_url(self) -> Union[str, None]:

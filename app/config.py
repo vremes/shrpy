@@ -25,3 +25,9 @@ DISCORD_WEBHOOK_TIMEOUT: int = 5
 
 # The amount of bytes python-magic will read from uploaded file to determine its extension
 MAGIC_BUFFER_BYTES: int = 2048
+
+# The amount of bytes for secrets.token_urlsafe, used in filenames
+FILE_TOKEN_BYTES: int = 12
+
+# The amount of bytes for secrets.token_urlsafe, used in shortened URLs
+URL_TOKEN_BYTES: int = 6
