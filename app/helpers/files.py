@@ -3,6 +3,7 @@ import magic
 import secrets
 import mimetypes
 from app import config
+from functools import cached_property
 from werkzeug.security import safe_join
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
@@ -21,17 +22,22 @@ class File:
         # Set arbitrary FileStorage.filename to lowercase and secure version of itself
         self.__file.filename = secure_filename(self.__file.filename.lower())
 
-        # Setup extension and filename
-        self.__set_extension()
-        self.__set_filename()
-
-    @property
+    @cached_property
     def filename(self) -> str:
-        return self.__filename
+        custom_filename = secrets.token_urlsafe(config.FILE_TOKEN_BYTES)
+
+        if self.use_original_filename:
+            filename = f'{custom_filename}-{self.__file.filename[:18]}'
+        else:
+            filename = custom_filename
+
+        return f'{filename}{self.extension}'
     
-    @property
+    @cached_property
     def extension(self) -> str:
-        return self.__extension
+        file_bytes = self.__file.read(config.MAGIC_BUFFER_BYTES)
+        mime = magic.from_buffer(file_bytes, mime=True).lower()
+        return mimetypes.guess_extension(mime)
 
     @staticmethod
     def delete(filename: str) -> bool:
@@ -63,21 +69,6 @@ class File:
         self.__file.seek(os.SEEK_SET)
 
         self.__file.save(save_path)
-
-    def __set_filename(self):
-        custom_filename = secrets.token_urlsafe(config.FILE_TOKEN_BYTES)
-
-        if self.use_original_filename:
-            filename = f'{custom_filename}-{self.__file.filename[:18]}'
-        else:
-            filename = custom_filename
-
-        self.__filename = f'{filename}{self.extension}'
-
-    def __set_extension(self):
-        file_bytes = self.__file.read(config.MAGIC_BUFFER_BYTES)
-        mime = magic.from_buffer(file_bytes, mime=True).lower()
-        self.__extension = mimetypes.guess_extension(mime)
 
 class InvalidFileException(Exception):
     """Raised when `app.helpers.files.File` is initialized using wrong `file_instance`."""
