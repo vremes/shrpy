@@ -25,18 +25,15 @@ class FileService:
         # Set File.use_original_filename to True/False
         f.use_original_filename = bool(flask.request.headers.get('X-Use-Original-Filename', type=int))
 
-        # Get the filename
-        filename = f.get_filename()
-
         # Save the file
         f.save()
 
         # Generate HMAC hash using Flask's secret key and filename
-        hmac_hash = utils.create_hmac_hash(filename, flask.current_app.secret_key)
+        hmac_hash = utils.create_hmac_hash(f.filename, flask.current_app.secret_key)
 
         # Create URLs
-        file_url = flask.url_for('main.uploads', filename=filename, _external=True)
-        delete_url = flask.url_for('api.delete_file', hmac_hash=hmac_hash, filename=filename, _external=True)
+        file_url = flask.url_for('main.uploads', filename=f.filename, _external=True)
+        delete_url = flask.url_for('api.delete_file', hmac_hash=hmac_hash, filename=f.filename, _external=True)
 
         # Send data to Discord webhook
         if discord_webhook.is_enabled:

@@ -13,8 +13,6 @@ class File:
         if isinstance(file_instance, FileStorage) is False:
             raise InvalidFileException(file_instance)
 
-        self.filename = None
-        self.extension = None
         self.use_original_filename = False
 
         # Private FileStorage instance
@@ -23,45 +21,17 @@ class File:
         # Set arbitrary FileStorage.filename to lowercase and secure version of itself
         self.__file.filename = secure_filename(self.__file.filename.lower())
 
-        # Get extension based on file content
-        self.get_extension()
+        # Setup extension and filename
+        self.__set_extension()
+        self.__set_filename()
 
-    def get_filename(self) -> str:
-        """Returns custom filename, generated using `secrets.token_urlsafe`."""
-        if self.filename is None:
-            custom_filename = secrets.token_urlsafe(12)
-
-            if self.use_original_filename:
-                self.filename = '{}-{}{}'.format(custom_filename, self.__file.filename[:18], self.extension)
-            else:
-                self.filename = '{}{}'.format(custom_filename, self.extension)
-
-        return self.filename
-
-    def get_extension(self) -> str:
-        if self.extension is None:
-            file_bytes = self.__file.read(config.MAGIC_BUFFER_BYTES)
-            mime = magic.from_buffer(file_bytes, mime=True).lower()
-            self.extension = mimetypes.guess_extension(mime)
-        return self.extension
-
-    def is_allowed(self) -> bool:
-        """Check if file is allowed, based on `config.ALLOWED_EXTENSIONS`."""
-        if not config.ALLOWED_EXTENSIONS:
-            return True
-
-        return self.extension in config.ALLOWED_EXTENSIONS
-
-    def save(self, save_directory = config.UPLOAD_DIR) -> None:
-        """Saves the file to `UPLOAD_DIR`."""
-        if os.path.isdir(save_directory) is False:
-            os.makedirs(save_directory)
-        save_path = safe_join(save_directory, self.get_filename())
-
-        # Set file descriptor back to beginning of the file so save works correctly
-        self.__file.seek(os.SEEK_SET)
-
-        self.__file.save(save_path)
+    @property
+    def filename(self) -> str:
+        return self.__filename
+    
+    @property
+    def extension(self) -> str:
+        return self.__extension
 
     @staticmethod
     def delete(filename: str) -> bool:
@@ -74,6 +44,40 @@ class File:
         os.remove(file_path)
 
         return True
+
+    def is_allowed(self) -> bool:
+        """Check if file is allowed, based on `config.ALLOWED_EXTENSIONS`."""
+        if not config.ALLOWED_EXTENSIONS:
+            return True
+
+        return self.extension in config.ALLOWED_EXTENSIONS
+
+    def save(self, save_directory = config.UPLOAD_DIR) -> None:
+        """Saves the file to `UPLOAD_DIR`."""
+        if os.path.isdir(save_directory) is False:
+            os.makedirs(save_directory)
+
+        save_path = safe_join(save_directory, self.filename)
+
+        # Set file descriptor back to beginning of the file so save works correctly
+        self.__file.seek(os.SEEK_SET)
+
+        self.__file.save(save_path)
+
+    def __set_filename(self):
+        custom_filename = secrets.token_urlsafe(12)
+
+        if self.use_original_filename:
+            filename = f'{custom_filename}-{self.__file.filename[:18]}'
+        else:
+            filename = custom_filename
+
+        self.__filename = f'{filename}{self.extension}'
+
+    def __set_extension(self):
+        file_bytes = self.__file.read(config.MAGIC_BUFFER_BYTES)
+        mime = magic.from_buffer(file_bytes, mime=True).lower()
+        self.__extension = mimetypes.guess_extension(mime)
 
 class InvalidFileException(Exception):
     """Raised when `app.helpers.files.File` is initialized using wrong `file_instance`."""
