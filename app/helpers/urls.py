@@ -3,6 +3,7 @@ import secrets
 from app import config
 from typing import Union
 from urllib.request import urlparse
+from functools import cached_property
 
 class ShortUrl:
     def __init__(self, url=None):
@@ -12,18 +13,9 @@ class ShortUrl:
         self.db = self.__get_db()
         self.cursor = self.db.cursor()
 
-        # Generate token
-        self.__set_token()
-
-    @property
+    @cached_property
     def token(self) -> str:
-        return self.__token
-
-    def __set_token(self):
-        self.__token = secrets.token_urlsafe(config.URL_TOKEN_BYTES)
-
-    def __parse(self) -> urlparse:
-        return urlparse(self.url)
+        return secrets.token_urlsafe(config.URL_TOKEN_BYTES)
 
     def is_valid(self) -> bool:
         """Checks if URL is valid"""
@@ -33,7 +25,7 @@ class ShortUrl:
         if not self.url.startswith(('https://', 'http://')):
             self.url = 'https://{}'.format(self.url)
 
-        parsed = self.__parse()
+        parsed = urlparse(self.url)
 
         # Parsed URL must have at least scheme and netloc (e.g. domain name)
         try:    
