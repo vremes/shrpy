@@ -101,19 +101,18 @@ class ShortUrlService:
         short_url.add()
 
         # Create HMAC for URL using token
-        token = short_url.get_token()
-        hmac_hash = utils.create_hmac_hash(token, flask.current_app.secret_key)
+        hmac_hash = utils.create_hmac_hash(short_url.token, flask.current_app.secret_key)
 
         # Create URLs
-        short_url = flask.url_for('main.short_url', token=token, _external=True)
-        delete_url = flask.url_for('api.delete_url', hmac_hash=hmac_hash, token=token, _external=True)
+        shortened_url = flask.url_for('main.short_url', token=short_url.token, _external=True)
+        delete_url = flask.url_for('api.delete_url', hmac_hash=hmac_hash, token=short_url.token, _external=True)
 
         # Send data to Discord webhook
         if discord_webhook.is_enabled:
-            discord_webhook.embed(EmbedType.SHORT_URL, file_url=short_url, delete_url=delete_url, original_url=url, shortened_url=short_url)
+            discord_webhook.embed(EmbedType.SHORT_URL, file_url=shortened_url, delete_url=delete_url, original_url=url, shortened_url=shortened_url)
             discord_webhook.send()
 
-        return flask.jsonify(url=short_url, delete_url=delete_url)
+        return flask.jsonify(url=shortened_url, delete_url=delete_url)
 
     @staticmethod
     def delete() -> flask.Response:
