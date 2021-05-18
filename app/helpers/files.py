@@ -19,25 +19,28 @@ class File:
         # Private FileStorage instance
         self.__file = file_instance
 
-        # Set arbitrary FileStorage.filename to lowercase and secure version of itself
-        self.__file.filename = secure_filename(self.__file.filename.lower())
-
     @cached_property
     def filename(self) -> str:
         custom_filename = secrets.token_urlsafe(config.FILE_TOKEN_BYTES)
 
         if self.use_original_filename:
-            filename = f'{custom_filename}-{self.__file.filename[:18]}'
+            filename = f'{custom_filename}-{self.original_filename_root[:18]}'
         else:
             filename = custom_filename
 
         return f'{filename}{self.extension}'
-    
+
     @cached_property
     def extension(self) -> str:
         file_bytes = self.__file.read(config.MAGIC_BUFFER_BYTES)
         mime = magic.from_buffer(file_bytes, mime=True).lower()
         return mimetypes.guess_extension(mime)
+
+    @cached_property
+    def original_filename_root(self):
+        sec_filename = secure_filename(self.__file.filename.lower())
+        root, ext = os.path.splitext(sec_filename)
+        return root
 
     @staticmethod
     def delete(filename: str) -> bool:
