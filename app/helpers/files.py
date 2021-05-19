@@ -34,6 +34,9 @@ class File:
     def extension(self) -> str:
         file_bytes = self.__file.read(config.MAGIC_BUFFER_BYTES)
         mime = magic.from_buffer(file_bytes, mime=True).lower()
+
+        self.add_custom_mimetypes()
+
         return mimetypes.guess_extension(mime)
 
     @cached_property
@@ -72,6 +75,9 @@ class File:
         self.__file.seek(os.SEEK_SET)
 
         self.__file.save(save_path)
+
+    def add_custom_mimetypes(self):
+        mimetypes.add_type('video/x-m4v', '.m4v')
 
 class InvalidFileException(Exception):
     """Raised when `app.helpers.files.File` is initialized using wrong `file_instance`."""

@@ -8,7 +8,7 @@ MAX_CONTENT_LENGTH: int = 16 * 1024 * 1024
 UPLOAD_DIR: str = os.path.join(os.getcwd(), 'app', 'uploads')
 
 # List of allowed file extensions
-ALLOWED_EXTENSIONS: list = ['.png', '.jpg', '.jpeg', '.gif', '.webm', '.mp4', '.webp', '.txt']
+ALLOWED_EXTENSIONS: list = ['.png', '.jpg', '.jpeg', '.gif', '.webm', '.mp4', '.webp', '.txt', '.m4v']
 
 # Password for file uploads, leave it to empty string if you don't want to use a password at all
 UPLOAD_PASSWORD: str = ''
