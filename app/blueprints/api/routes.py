@@ -27,5 +27,5 @@ def shorten():
     return ShortUrlService.create()
 
 @api.route('/delete-short-url/<hmac_hash>/<token>')
-def delete_url(hmac_hash, token):
+def delete_short_url(hmac_hash, token):
     return ShortUrlService.delete()

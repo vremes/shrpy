@@ -2,8 +2,10 @@ import sqlite3
 import secrets
 from app import config
 from typing import Union
+from app.helpers import utils
 from urllib.request import urlparse
 from functools import cached_property
+from flask import current_app, url_for
 
 class ShortUrl:
     def __init__(self, url=None):
@@ -16,6 +18,21 @@ class ShortUrl:
     @cached_property
     def token(self) -> str:
         return secrets.token_urlsafe(config.URL_TOKEN_BYTES)
+
+    @cached_property
+    def hmac(self) -> str:
+        """Returns HMAC hash calculated from token, `flask.current_app.secret_key` is used as secret."""
+        return utils.create_hmac_hash(self.token, current_app.secret_key)
+    
+    @cached_property
+    def shortened_url(self) -> str:
+        """Returns the shortened URL using `flask.url_for`."""
+        return url_for('main.short_url', token=self.token, _external=True)
+    
+    @cached_property
+    def deletion_url(self) -> str:
+        """Returns deletion URL using `flask.url_for`."""
+        return url_for('api.delete_short_url', hmac_hash=self.hmac, token=self.token, _external=True)
 
     def is_valid(self) -> bool:
         """Checks if URL is valid"""
@@ -34,6 +51,7 @@ class ShortUrl:
             return False
 
     def add(self):
+        """Inserts the URL and token to database."""
         self.cursor.execute("INSERT INTO urls VALUES (?, ?)", (
             self.token,
             self.url
@@ -42,6 +60,7 @@ class ShortUrl:
 
     @classmethod
     def get_by_token(cls, token: str) -> Union[str, None]:
+        """Returns the URL for given token from database."""
         instance = cls()
         result = instance.cursor.execute("SELECT url FROM urls WHERE token = ?", (token,))
         row = result.fetchone()

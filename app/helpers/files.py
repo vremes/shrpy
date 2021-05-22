@@ -3,24 +3,27 @@ import magic
 import secrets
 import mimetypes
 from app import config
+from app.helpers import utils
+from flask import current_app, url_for
 from functools import cached_property
 from werkzeug.security import safe_join
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
 
 class File:
-    def __init__(self, file_instance: FileStorage):
+    def __init__(self, file_instance: FileStorage, use_original_filename=True):
         """Class for uploaded files which takes the `werkzeug.datastructures.FileStorage` from `flask.Request.files` as first parameter."""
         if isinstance(file_instance, FileStorage) is False:
             raise InvalidFileException(file_instance)
 
-        self.use_original_filename = False
+        self.use_original_filename = use_original_filename
 
         # Private FileStorage instance
         self.__file = file_instance
 
     @cached_property
     def filename(self) -> str:
+        """Returns random filename."""
         custom_filename = secrets.token_urlsafe(config.FILE_TOKEN_BYTES)
 
         if self.use_original_filename:
@@ -32,6 +35,7 @@ class File:
 
     @cached_property
     def extension(self) -> str:
+        """Returns extension using `python-magic` and `mimetypes`."""
         file_bytes = self.__file.read(config.MAGIC_BUFFER_BYTES)
         mime = magic.from_buffer(file_bytes, mime=True).lower()
 
@@ -41,9 +45,25 @@ class File:
 
     @cached_property
     def original_filename_root(self):
+        """Returns the original filename without extension."""
         sec_filename = secure_filename(self.__file.filename.lower())
         root, ext = os.path.splitext(sec_filename)
         return root
+
+    @cached_property
+    def hmac(self) -> str:
+        """Returns HMAC hash calculated from filename, `flask.current_app.secret_key` is used as secret."""
+        return utils.create_hmac_hash(self.filename, current_app.secret_key)
+    
+    @cached_property
+    def url(self) -> str:
+        """Returns file URL using `flask.url_for`."""
+        return url_for('main.uploads', filename=self.filename, _external=True)
+    
+    @cached_property
+    def deletion_url(self) -> str:
+        """Returns deletion URL using `flask.url_for`."""
+        return url_for('api.delete_file', hmac_hash=self.hmac, filename=self.filename, _external=True)
 
     @staticmethod
     def delete(filename: str) -> bool:
@@ -77,6 +97,7 @@ class File:
         self.__file.save(save_path)
 
     def add_custom_mimetypes(self):
+        """Adds unsupported mimetypes/extensions to `mimetypes` module."""
         mimetypes.add_type('video/x-m4v', '.m4v')
 
 class InvalidFileException(Exception):
