@@ -16,32 +16,23 @@ class FileService:
             return utils.response(HTTPStatus.BAD_REQUEST, Message.INVALID_FILE)
 
         # Our own class which utilises werkzeug.datastructures.FileStorage
-        f = File(uploaded_file)
+        use_og_filename = bool(flask.request.headers.get('X-Use-Original-Filename', type=int))
+        f = File(uploaded_file, use_og_filename)
 
         # Check if file is allowed
         if f.is_allowed() is False:
             return utils.response(HTTPStatus.UNPROCESSABLE_ENTITY, Message.INVALID_FILE_TYPE)
 
-        # Set File.use_original_filename to True/False
-        f.use_original_filename = bool(flask.request.headers.get('X-Use-Original-Filename', type=int))
-
         # Save the file
         f.save()
 
-        # Generate HMAC hash using Flask's secret key and filename
-        hmac_hash = utils.create_hmac_hash(f.filename, flask.current_app.secret_key)
-
-        # Create URLs
-        file_url = flask.url_for('main.uploads', filename=f.filename, _external=True)
-        delete_url = flask.url_for('api.delete_file', hmac_hash=hmac_hash, filename=f.filename, _external=True)
-
         # Send data to Discord webhook
         if discord_webhook.is_enabled:
-            discord_webhook.embed(EmbedType.FILE, file_url=file_url, delete_url=delete_url)
+            discord_webhook.embed(EmbedType.FILE, file_url=f.url, delete_url=f.deletion_url)
             discord_webhook.send()
 
         # Return JSON
-        return flask.jsonify(url=file_url, delete_url=delete_url)
+        return flask.jsonify(url=f.url, delete_url=f.deletion_url)
 
     @staticmethod
     def delete() -> flask.Response:
@@ -100,19 +91,12 @@ class ShortUrlService:
         # Add URL to database
         short_url.add()
 
-        # Create HMAC for URL using token
-        hmac_hash = utils.create_hmac_hash(short_url.token, flask.current_app.secret_key)
-
-        # Create URLs
-        shortened_url = flask.url_for('main.short_url', token=short_url.token, _external=True)
-        delete_url = flask.url_for('api.delete_url', hmac_hash=hmac_hash, token=short_url.token, _external=True)
-
         # Send data to Discord webhook
         if discord_webhook.is_enabled:
-            discord_webhook.embed(EmbedType.SHORT_URL, file_url=shortened_url, delete_url=delete_url, original_url=url, shortened_url=shortened_url)
+            discord_webhook.embed(EmbedType.SHORT_URL, file_url=short_url.shortened_url, delete_url=short_url.deletion_url, original_url=url, shortened_url=short_url.shortened_url)
             discord_webhook.send()
 
-        return flask.jsonify(url=shortened_url, delete_url=delete_url)
+        return flask.jsonify(url=short_url.shortened_url, delete_url=short_url.deletion_url)
 
     @staticmethod
     def delete() -> flask.Response:
