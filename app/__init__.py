@@ -1,11 +1,9 @@
 from flask import Flask
 from app.helpers.utils import response
 from werkzeug.exceptions import HTTPException
-from app.helpers.delete_files import FileDeletionScheduler
 from app.helpers.discord.webhooks import CustomDiscordWebhook
 
 discord_webhook = CustomDiscordWebhook()
-file_deletion_scheduler = FileDeletionScheduler()
 
 def create_app():
     app = Flask(__name__)
@@ -18,9 +16,6 @@ def create_app():
 
     # Set discord webhook timeout
     discord_webhook.timeout = app.config.get('DISCORD_WEBHOOK_TIMEOUT')
-
-    # Setup automatic file deletion
-    file_deletion_scheduler.setup()
 
     # jsonify HTTP errors
     @app.errorhandler(HTTPException)
