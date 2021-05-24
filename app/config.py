@@ -13,9 +13,6 @@ ALLOWED_EXTENSIONS: list = ['.png', '.jpg', '.jpeg', '.gif', '.webm', '.mp4', '.
 # Password for file uploads, leave it to empty string if you don't want to use a password at all
 UPLOAD_PASSWORD: str = ''
 
-# Files older than DELETE_THRESHOLD_DAYS in UPLOAD_FOLDER will be deleted, leave this to 0 if you want to disable this feature
-DELETE_THRESHOLD_DAYS: int = 0
-
 # List of Discord webhooks https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks
 # leave this to empty list if you don't want to use Discord webhooks
 DISCORD_WEBHOOKS: list = []
