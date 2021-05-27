@@ -9,6 +9,7 @@ from functools import cached_property
 from werkzeug.security import safe_join
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
+from app.helpers.discord.embeds import FileEmbed
 
 class File:
     def __init__(self, file_instance: FileStorage, use_original_filename=True):
@@ -99,6 +100,14 @@ class File:
     def add_custom_mimetypes(self):
         """Adds unsupported mimetypes/extensions to `mimetypes` module."""
         mimetypes.add_type('video/x-m4v', '.m4v')
+
+    def embed(self) -> FileEmbed:
+        """Returns FileEmbed instance for this file."""
+        embed = FileEmbed(
+            content_url=self.url, 
+            deletion_url=self.deletion_url
+        )
+        return embed
 
 class InvalidFileException(Exception):
     """Raised when `app.helpers.files.File` is initialized using wrong `file_instance`."""

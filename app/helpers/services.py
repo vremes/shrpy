@@ -28,7 +28,9 @@ class FileService:
 
         # Send data to Discord webhook
         if discord_webhook.is_enabled:
-            discord_webhook.embed(EmbedType.FILE, file_url=f.url, delete_url=f.deletion_url)
+            discord_webhook.add_embed(
+                f.embed()
+            )
             discord_webhook.send()
 
         # Return JSON
@@ -93,7 +95,9 @@ class ShortUrlService:
 
         # Send data to Discord webhook
         if discord_webhook.is_enabled:
-            discord_webhook.embed(EmbedType.SHORT_URL, file_url=short_url.shortened_url, delete_url=short_url.deletion_url, original_url=url, shortened_url=short_url.shortened_url)
+            discord_webhook.add_embed(
+                short_url.embed()
+            )
             discord_webhook.send()
 
         return flask.jsonify(url=short_url.shortened_url, delete_url=short_url.deletion_url)

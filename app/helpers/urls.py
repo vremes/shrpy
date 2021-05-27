@@ -6,6 +6,7 @@ from app.helpers import utils
 from urllib.request import urlparse
 from functools import cached_property
 from flask import current_app, url_for
+from app.helpers.discord.embeds import ShortUrlEmbed
 
 class ShortUrl:
     def __init__(self, url=None):
@@ -57,6 +58,16 @@ class ShortUrl:
             self.url
         ))
         self.db.commit()
+    
+    def embed(self) -> ShortUrlEmbed:
+        """Returns ShorturlEmbed instance for this URL."""
+        embed = ShortUrlEmbed(
+            content_url=self.shortened_url, 
+            deletion_url=self.deletion_url, 
+            original_url=self.url, 
+            shortened_url=self.shortened_url
+        )
+        return embed
 
     @classmethod
     def get_by_token(cls, token: str) -> Union[str, None]:
