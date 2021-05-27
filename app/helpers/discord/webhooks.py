@@ -1,7 +1,6 @@
 import logging
 from requests.exceptions import Timeout
 from discord_webhook import DiscordWebhook
-from app.helpers.discord.embeds import EmbedType, FileEmbed, ShortUrlEmbed
 
 logger = logging.getLogger('discord_webhook')
 
