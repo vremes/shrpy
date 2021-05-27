@@ -1,10 +1,5 @@
-from enum import IntEnum
 from app.helpers.utils import Message, random_hex
 from discord_webhook import DiscordEmbed
-
-class EmbedType(IntEnum):
-    FILE = 0
-    SHORT_URL = 1
 
 class CustomDiscordEmbed(DiscordEmbed):
     def __init__(self, **kwargs):

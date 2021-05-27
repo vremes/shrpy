@@ -5,7 +5,6 @@ from app.helpers import utils
 from app.helpers.files import File
 from app.helpers.urls import ShortUrl
 from app.helpers.utils import Message
-from app.helpers.discord.webhooks import EmbedType
 
 class FileService:
     @staticmethod
