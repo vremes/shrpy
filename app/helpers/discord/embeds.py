@@ -1,4 +1,5 @@
-from app.helpers.utils import Message, random_hex
+from random import randint
+from app.helpers.utils import Message
 from discord_webhook import DiscordEmbed
 
 class CustomDiscordEmbed(DiscordEmbed):
@@ -14,7 +15,7 @@ class CustomDiscordEmbed(DiscordEmbed):
 
         # Set random color for embed
         self.set_color(
-            random_hex()
+            randint(0, 0xffffff)
         )
 
         self.set_timestamp()

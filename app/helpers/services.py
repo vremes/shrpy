@@ -1,10 +1,8 @@
 import flask
 from http import HTTPStatus
 from app import discord_webhook
-from app.helpers import utils
-from app.helpers.files import File
-from app.helpers.urls import ShortUrl
-from app.helpers.utils import Message
+from app.helpers.main import File, ShortUrl
+from app.helpers.utils import Message, response, create_hmac_hexdigest, is_valid_digest
 
 class FileService:
     @staticmethod
@@ -12,7 +10,7 @@ class FileService:
         uploaded_file = flask.request.files.get('file')
         
         if uploaded_file is None:
-            return utils.response(HTTPStatus.BAD_REQUEST, Message.INVALID_FILE)
+            return response(HTTPStatus.BAD_REQUEST, Message.INVALID_FILE)
 
         # Our own class which utilises werkzeug.datastructures.FileStorage
         use_og_filename = bool(flask.request.headers.get('X-Use-Original-Filename', type=int))
@@ -20,7 +18,7 @@ class FileService:
 
         # Check if file is allowed
         if f.is_allowed() is False:
-            return utils.response(HTTPStatus.UNPROCESSABLE_ENTITY, Message.INVALID_FILE_TYPE)
+            return response(HTTPStatus.UNPROCESSABLE_ENTITY, Message.INVALID_FILE_TYPE)
 
         # Save the file
         f.save()
@@ -39,16 +37,16 @@ class FileService:
     def delete() -> flask.Response:
         filename = flask.request.view_args.get('filename')
         hmac_hash = flask.request.view_args.get('hmac_hash')
-        new_hmac_hash = utils.create_hmac_hash(filename, flask.current_app.secret_key)
+        new_hmac_hash = create_hmac_hexdigest(filename, flask.current_app.secret_key)
 
-        # If hash does not match
-        if utils.is_valid_hash(hmac_hash, new_hmac_hash) is False:
+        # If digest is invalid
+        if is_valid_digest(hmac_hash, new_hmac_hash) is False:
             flask.abort(HTTPStatus.NOT_FOUND)
 
         if File.delete(filename) is False:
             flask.abort(HTTPStatus.GONE)
 
-        return utils.response(message=Message.FILE_DELETED)
+        return response(message=Message.FILE_DELETED)
     
     @staticmethod
     def config() -> flask.Response:
@@ -82,12 +80,12 @@ class ShortUrlService:
         url = flask.request.form.get('url')
 
         if url is None:
-            return utils.response(HTTPStatus.BAD_REQUEST, Message.INVALID_URL)
+            return response(HTTPStatus.BAD_REQUEST, Message.INVALID_URL)
 
         short_url = ShortUrl(url)
 
         if short_url.is_valid() is False:
-            return utils.response(HTTPStatus.UNPROCESSABLE_ENTITY, Message.INVALID_URL)
+            return response(HTTPStatus.UNPROCESSABLE_ENTITY, Message.INVALID_URL)
 
         # Add URL to database
         short_url.add()
@@ -105,16 +103,16 @@ class ShortUrlService:
     def delete() -> flask.Response:
         token = flask.request.view_args.get('token')
         hmac_hash = flask.request.view_args.get('hmac_hash')
-        new_hmac_hash = utils.create_hmac_hash(token, flask.current_app.secret_key)
+        new_hmac_hash = create_hmac_hexdigest(token, flask.current_app.secret_key)
 
-        # If hash does not match
-        if utils.is_valid_hash(hmac_hash, new_hmac_hash) is False:
+        # If digest is invalid
+        if is_valid_digest(hmac_hash, new_hmac_hash) is False:
             flask.abort(HTTPStatus.NOT_FOUND)
 
         if ShortUrl.delete(token) is False:
             flask.abort(HTTPStatus.GONE)
 
-        return utils.response(message=Message.URL_DELETED)
+        return response(message=Message.URL_DELETED)
 
     @staticmethod
     def config() -> flask.Response:
