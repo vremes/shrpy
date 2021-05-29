@@ -28,7 +28,7 @@ class File:
         custom_filename = secrets.token_urlsafe(config.FILE_TOKEN_BYTES)
 
         if self.use_original_filename:
-            filename = f'{custom_filename}-{self.original_filename_root[:18]}'
+            filename = f'{custom_filename}-{self.original_filename_root[:config.ORIGINAL_FILENAME_LENGTH]}'
         else:
             filename = custom_filename
 

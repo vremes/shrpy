@@ -28,3 +28,6 @@ FILE_TOKEN_BYTES: int = 12
 
 # The amount of bytes for secrets.token_urlsafe, used in shortened URLs
 URL_TOKEN_BYTES: int = 6
+
+# The amount of characters that will be appended to random filename from original filename when X-Use-Original-Filename header value is set to 1
+ORIGINAL_FILENAME_LENGTH: int = 18

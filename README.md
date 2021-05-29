@@ -74,6 +74,8 @@ Config file is located in [/app/config.py](/app/config.py)
 
 `URL_TOKEN_BYTES`: The amount of bytes `secrets.token_urlsafe` will use to generate shortened URLs.
 
+`ORIGINAL_FILENAME_LENGTH`: The amount of characters that will be appended to random filename from original filename when `X-Use-Original-Filename` header value is set to `1`.
+
 ## Headers
 
 `Authorization`: The password for uploading files (`UPLOAD_PASSWORD` in config.py file), simply ignore this header if you don't use a password.
