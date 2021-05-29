@@ -3,13 +3,12 @@ import flask
 import hashlib
 from enum import Enum
 from app import config
-from random import randint
 from functools import wraps
 from http import HTTPStatus
 from werkzeug.security import safe_str_cmp
 
-def create_hmac_hash(hmac_data: str, secret_key: str = None) -> str:
-    """Creates HMAC hash using the hmac_data and returns it."""
+def create_hmac_hexdigest(hmac_data: str, secret_key: str = None) -> str:
+    """Creates HMAC hexdigest using the hmac_data and returns it."""
     hmac_hash = hmac.new(
         secret_key.encode('utf-8'),
         hmac_data.encode('utf-8'),
@@ -18,7 +17,7 @@ def create_hmac_hash(hmac_data: str, secret_key: str = None) -> str:
 
     return hmac_hash
 
-def is_valid_hash(hash_a: str, hash_b: str) -> bool:
+def is_valid_digest(hash_a: str, hash_b: str) -> bool:
     """Compares two hashes using `hmac.compare_digest`."""
     return hmac.compare_digest(hash_a, hash_b)
 
@@ -44,9 +43,6 @@ def auth_required(f):
                 flask.abort(HTTPStatus.UNAUTHORIZED)
         return f(*args, **kwargs)
     return decorated_function
-
-def random_hex():
-    return randint(0, 0xffffff)
 
 class Message(str, Enum):
     # Services
