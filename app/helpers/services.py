@@ -1,19 +1,28 @@
-import flask
+# standard library imports
 from http import HTTPStatus
+
+# pip imports
+from flask import (
+    Response, request, jsonify, 
+    current_app, abort, url_for, 
+    send_from_directory, redirect
+)
+
+# local imports
 from app import discord_webhook
 from app.helpers.main import File, ShortUrl
 from app.helpers.utils import Message, response, create_hmac_hexdigest, is_valid_digest
 
 class FileService:
     @staticmethod
-    def create() -> flask.Response:
-        uploaded_file = flask.request.files.get('file')
+    def create() -> Response:
+        uploaded_file = request.files.get('file')
         
         if uploaded_file is None:
             return response(HTTPStatus.BAD_REQUEST, Message.INVALID_FILE)
 
         # Our own class which utilises werkzeug.datastructures.FileStorage
-        use_og_filename = bool(flask.request.headers.get('X-Use-Original-Filename', type=int))
+        use_og_filename = bool(request.headers.get('X-Use-Original-Filename', type=int))
         f = File(uploaded_file, use_og_filename)
 
         # Check if file is allowed
@@ -31,31 +40,31 @@ class FileService:
             discord_webhook.send()
 
         # Return JSON
-        return flask.jsonify(url=f.url, delete_url=f.deletion_url)
+        return jsonify(url=f.url, delete_url=f.deletion_url)
 
     @staticmethod
-    def delete() -> flask.Response:
-        filename = flask.request.view_args.get('filename')
-        hmac_hash = flask.request.view_args.get('hmac_hash')
-        new_hmac_hash = create_hmac_hexdigest(filename, flask.current_app.secret_key)
+    def delete() -> Response:
+        filename = request.view_args.get('filename')
+        hmac_hash = request.view_args.get('hmac_hash')
+        new_hmac_hash = create_hmac_hexdigest(filename, current_app.secret_key)
 
         # If digest is invalid
         if is_valid_digest(hmac_hash, new_hmac_hash) is False:
-            flask.abort(HTTPStatus.NOT_FOUND)
+            abort(HTTPStatus.NOT_FOUND)
 
         if File.delete(filename) is False:
-            flask.abort(HTTPStatus.GONE)
+            abort(HTTPStatus.GONE)
 
         return response(message=Message.FILE_DELETED)
     
     @staticmethod
-    def config() -> flask.Response:
+    def config() -> Response:
         cfg = {
-            "Name": "{} (File uploader)".format(flask.request.host),
+            "Name": "{} (File uploader)".format(request.host),
             "Version": "1.0.0",
             "DestinationType": "ImageUploader, FileUploader",
             "RequestMethod": "POST",
-            "RequestURL": flask.url_for('api.upload', _external=True),
+            "RequestURL": url_for('api.upload', _external=True),
             "Body": "MultipartFormData",
             "FileFormName": "file",
             "URL": "$json:url$",
@@ -66,18 +75,18 @@ class FileService:
             },
             "ErrorMessage": "$json:status$"
         }
-        return flask.jsonify(cfg)
+        return jsonify(cfg)
 
     @staticmethod
-    def get_by_filename() -> flask.Response:
-        filename = flask.request.view_args.get('filename')
-        upload_dir = flask.current_app.config['UPLOAD_DIR']
-        return flask.send_from_directory(upload_dir, filename)
+    def get_by_filename() -> Response:
+        filename = request.view_args.get('filename')
+        upload_dir = current_app.config['UPLOAD_DIR']
+        return send_from_directory(upload_dir, filename)
 
 class ShortUrlService:
     @staticmethod
-    def create() -> flask.Response:
-        url = flask.request.form.get('url')
+    def create() -> Response:
+        url = request.form.get('url')
 
         if url is None:
             return response(HTTPStatus.BAD_REQUEST, Message.INVALID_URL)
@@ -97,32 +106,32 @@ class ShortUrlService:
             )
             discord_webhook.send()
 
-        return flask.jsonify(url=short_url.shortened_url, delete_url=short_url.deletion_url)
+        return jsonify(url=short_url.shortened_url, delete_url=short_url.deletion_url)
 
     @staticmethod
-    def delete() -> flask.Response:
-        token = flask.request.view_args.get('token')
-        hmac_hash = flask.request.view_args.get('hmac_hash')
-        new_hmac_hash = create_hmac_hexdigest(token, flask.current_app.secret_key)
+    def delete() -> Response:
+        token = request.view_args.get('token')
+        hmac_hash = request.view_args.get('hmac_hash')
+        new_hmac_hash = create_hmac_hexdigest(token, current_app.secret_key)
 
         # If digest is invalid
         if is_valid_digest(hmac_hash, new_hmac_hash) is False:
-            flask.abort(HTTPStatus.NOT_FOUND)
+            abort(HTTPStatus.NOT_FOUND)
 
         if ShortUrl.delete(token) is False:
-            flask.abort(HTTPStatus.GONE)
+            abort(HTTPStatus.GONE)
 
         return response(message=Message.URL_DELETED)
 
     @staticmethod
-    def config() -> flask.Response:
+    def config() -> Response:
         cfg = {
-            "Name": "{} (URL shortener)".format(flask.request.host),
+            "Name": "{} (URL shortener)".format(request.host),
             "Version": "1.0.0",
             "DestinationType": "URLShortener",
             "RequestMethod": "POST",
             "Body": "MultipartFormData",
-            "RequestURL": flask.url_for('api.shorten', _external=True),
+            "RequestURL": url_for('api.shorten', _external=True),
             "Headers": {
                 "Authorization": "YOUR-UPLOAD-PASSWORD-HERE"
             },
@@ -132,14 +141,14 @@ class ShortUrlService:
             "URL": "$json:url$",
             "DeletionURL": "$json:delete_url$"
         }
-        return flask.jsonify(cfg)
+        return jsonify(cfg)
 
     @staticmethod
-    def get_by_token() -> flask.Response:
-        token = flask.request.view_args.get('token')
+    def get_by_token() -> Response:
+        token = request.view_args.get('token')
         short_url = ShortUrl.get_by_token(token)
 
         if short_url is None:
-            flask.abort(HTTPStatus.NOT_FOUND)
+            abort(HTTPStatus.NOT_FOUND)
 
-        return flask.redirect(short_url)
+        return redirect(short_url)

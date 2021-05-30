@@ -15,7 +15,7 @@ from werkzeug.utils import safe_join, secure_filename
 # local imports
 from app import config
 from app.helpers.utils import create_hmac_hexdigest
-from app.helpers.discord.embeds import FileEmbed, ShortUrlEmbed
+from app.helpers.discord import FileEmbed, ShortUrlEmbed
 
 class File:
     def __init__(self, file_instance: FileStorage, use_original_filename=True):
