@@ -3,6 +3,7 @@ import os
 import secrets
 import sqlite3
 import mimetypes
+from contextlib import closing
 from urllib.parse import urlparse
 from functools import cached_property
 
@@ -126,12 +127,8 @@ class InvalidFileException(Exception):
         return f'{self.file_instance} ({file_instance_type}) is not an instance of werkzeug.datastructures.FileStorage ({FileStorage})'
 
 class ShortUrl:
-    def __init__(self, url=None):
-        self.url = url
-
-        # Database connection
-        self.db = self.__get_db()
-        self.cursor = self.db.cursor()
+    def __init__(self, url: str):
+        self.url = ''.join(url.lower().split())
 
     @cached_property
     def token(self) -> str:
@@ -141,12 +138,12 @@ class ShortUrl:
     def hmac(self) -> str:
         """Returns HMAC hash calculated from token, `flask.current_app.secret_key` is used as secret."""
         return create_hmac_hexdigest(self.token, current_app.secret_key)
-    
+
     @cached_property
     def shortened_url(self) -> str:
         """Returns the shortened URL using `flask.url_for`."""
         return url_for('main.short_url', token=self.token, _external=True)
-    
+
     @cached_property
     def deletion_url(self) -> str:
         """Returns deletion URL using `flask.url_for`."""
@@ -154,28 +151,22 @@ class ShortUrl:
 
     def is_valid(self) -> bool:
         """Checks if URL is valid"""
-        if self.url is None:
-            return False
-
-        if not self.url.startswith(('https://', 'http://')):
-            self.url = 'https://{}'.format(self.url)
-
         parsed = urlparse(self.url)
 
         # Parsed URL must have at least scheme and netloc (e.g. domain name)
-        try:    
+        try:
             return all([parsed.scheme, parsed.netloc]) and parsed.netloc.split('.')[1]
         except IndexError:
             return False
 
     def add(self):
         """Inserts the URL and token to database."""
-        self.cursor.execute("INSERT INTO urls VALUES (?, ?)", (
-            self.token,
-            self.url
-        ))
-        self.db.commit()
-    
+        with closing(self.get_cursor()) as cursor:
+            cursor.execute("INSERT INTO urls VALUES (?, ?)", (
+                self.token,
+                self.url
+            ))
+
     def embed(self) -> ShortUrlEmbed:
         """Returns ShorturlEmbed instance for this URL."""
         embed = ShortUrlEmbed(
@@ -189,23 +180,29 @@ class ShortUrl:
     @classmethod
     def get_by_token(cls, token: str):
         """Returns the URL for given token from database."""
-        instance = cls()
-        result = instance.cursor.execute("SELECT url FROM urls WHERE token = ?", (token,))
-        row = result.fetchone()
-        if row is None:
-            return None
-        return row[0]
+        result = None
+        with closing(cls.get_cursor()) as cursor:
+            row = cursor.execute("SELECT url FROM urls WHERE token = ?", (token,))
+            url_row = row.fetchone()
+            if url_row:
+                result = url_row['url']
+        return result
 
     @classmethod
     def delete(cls, token: str) -> bool:
         """DELETEs URL using given token from database."""
-        instance = cls()
-        execute = instance.cursor.execute("DELETE FROM urls WHERE token = ?", (token,))
-        instance.db.commit()
-        return execute.rowcount > 0
+        with closing(cls.get_cursor()) as cursor:
+            execute = cursor.execute("DELETE FROM urls WHERE token = ?", (token,))
+            return execute.rowcount > 0
 
-    def __get_db(self):
+    @staticmethod
+    def get_cursor():
         conn = sqlite3.connect('urls.db')
-        query = "CREATE TABLE IF NOT EXISTS urls (token VARCHAR(10) NOT NULL PRIMARY KEY, url TEXT NOT NULL)"
-        conn.execute(query)
-        return conn
+
+        # Enable autocommit & change row factory
+        conn.isolation_level = None
+        conn.row_factory = sqlite3.Row
+
+        conn.execute("CREATE TABLE IF NOT EXISTS urls (token VARCHAR(10) NOT NULL PRIMARY KEY, url TEXT NOT NULL)")
+        cursor = conn.cursor()
+        return cursor
