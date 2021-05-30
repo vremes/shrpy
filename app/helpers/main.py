@@ -128,7 +128,12 @@ class InvalidFileException(Exception):
 
 class ShortUrl:
     def __init__(self, url: str):
-        self.url = ''.join(url.lower().split())
+        url = ''.join(url.lower().split())
+
+        if not url.startswith(('https://', 'http://')):
+            url = f'https://{url}'
+
+        self.url = url
 
     @cached_property
     def token(self) -> str:
