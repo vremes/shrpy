@@ -1,7 +1,10 @@
+# pip imports
 from flask import Flask
-from app.helpers.utils import response
 from werkzeug.exceptions import HTTPException
-from app.helpers.discord.webhooks import CustomDiscordWebhook
+
+# local imports
+from app.helpers.utils import response
+from app.helpers.discord import CustomDiscordWebhook
 
 discord_webhook = CustomDiscordWebhook()
 

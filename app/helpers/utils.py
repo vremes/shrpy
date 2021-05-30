@@ -1,11 +1,16 @@
+# standard library imports
 import hmac
-import flask
 import hashlib
 from enum import Enum
-from app import config
 from functools import wraps
 from http import HTTPStatus
+
+# pip imports
 from werkzeug.security import safe_str_cmp
+from flask import Response, jsonify, request, abort
+
+# local imports
+from app import config
 
 def create_hmac_hexdigest(hmac_data: str, secret_key: str = None) -> str:
     """Creates HMAC hexdigest using the hmac_data and returns it."""
@@ -21,7 +26,7 @@ def is_valid_digest(hash_a: str, hash_b: str) -> bool:
     """Compares two hashes using `hmac.compare_digest`."""
     return hmac.compare_digest(hash_a, hash_b)
 
-def response(status_code: int = HTTPStatus.OK, status: str = HTTPStatus.OK.phrase, **kwargs) -> flask.Response:
+def response(status_code: int = HTTPStatus.OK, status: str = HTTPStatus.OK.phrase, **kwargs) -> Response:
     """Wrapper for `flask.jsonify`
 
     :param int status_code: HTTP status code, defaults to `200`
@@ -29,7 +34,7 @@ def response(status_code: int = HTTPStatus.OK, status: str = HTTPStatus.OK.phras
     :param **kwargs: Arbitrary keyword arguments, these will be added to the returned `Response` as JSON key/value pairs
     :return flask.jsonify (flask.Response)
     """
-    resp = flask.jsonify(status_code=status_code, status=status, **kwargs)
+    resp = jsonify(status_code=status_code, status=status, **kwargs)
     resp.status_code = status_code
     return resp
 
@@ -38,9 +43,9 @@ def auth_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if config.UPLOAD_PASSWORD:
-            authorization_header = flask.request.headers.get('Authorization')
+            authorization_header = request.headers.get('Authorization')
             if authorization_header is None or safe_str_cmp(config.UPLOAD_PASSWORD, authorization_header) is False:
-                flask.abort(HTTPStatus.UNAUTHORIZED)
+                abort(HTTPStatus.UNAUTHORIZED)
         return f(*args, **kwargs)
     return decorated_function
 
