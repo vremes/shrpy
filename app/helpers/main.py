@@ -116,7 +116,7 @@ class File:
         return embed
 
 class InvalidFileException(Exception):
-    """Raised when `app.helpers.files.File` is initialized using wrong `file_instance`."""
+    """Raised when `File` is initialized using wrong `file_instance`."""
     def __init__(self, file_instance, *args):
         self.file_instance = file_instance
         super().__init__(*args)
