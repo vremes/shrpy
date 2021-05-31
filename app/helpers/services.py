@@ -139,7 +139,8 @@ class ShortUrlService:
                 "url": "$input$"
             },
             "URL": "$json:url$",
-            "DeletionURL": "$json:delete_url$"
+            "DeletionURL": "$json:delete_url$",
+            "ErrorMessage": "$json:status$"
         }
         return jsonify(cfg)
 
