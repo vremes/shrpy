@@ -47,7 +47,7 @@ class File:
         file_bytes = self.__file.read(config.MAGIC_BUFFER_BYTES)
         mime = from_buffer(file_bytes, mime=True).lower()
 
-        self.add_custom_mimetypes()
+        self.add_unsupported_mimetypes()
 
         return mimetypes.guess_extension(mime)
 
@@ -104,9 +104,10 @@ class File:
 
         self.__file.save(save_path)
 
-    def add_custom_mimetypes(self):
+    def add_unsupported_mimetypes(self):
         """Adds unsupported mimetypes/extensions to `mimetypes` module."""
         mimetypes.add_type('video/x-m4v', '.m4v')
+        mimetypes.add_type('image/webp', '.webp')
 
     def embed(self) -> FileEmbed:
         """Returns FileEmbed instance for this file."""
