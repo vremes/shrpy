@@ -1,10 +1,13 @@
 # standard library imports
+import os
 import hmac
+import logging
 import hashlib
 import mimetypes
 from enum import Enum
 from functools import wraps
 from http import HTTPStatus
+from logging.handlers import RotatingFileHandler
 
 # pip imports
 from werkzeug.security import safe_str_cmp
@@ -54,6 +57,19 @@ def add_unsupported_mimetypes():
     """Adds unsupported mimetypes/extensions to `mimetypes` module."""
     mimetypes.add_type('video/x-m4v', '.m4v')
     mimetypes.add_type('image/webp', '.webp')
+
+def logger_file_handler() -> RotatingFileHandler:
+    if not os.path.isdir(config.LOGGER_FILE_PATH):
+        os.makedirs(config.LOGGER_FILE_PATH)
+
+    logfile_path = os.path.join(config.LOGGER_FILE_PATH, 'app.log')
+
+    handler = RotatingFileHandler(logfile_path, maxBytes=config.LOGGER_MAX_BYTES, backupCount=config.LOGGER_BACKUP_COUNT)
+    handler.setFormatter(
+        logging.Formatter('%(asctime)s | %(module)s.%(funcName)s | %(levelname)s | %(message)s')
+    )
+
+    return handler
 
 class Message(str, Enum):
     # Services

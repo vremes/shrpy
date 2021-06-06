@@ -31,3 +31,12 @@ URL_TOKEN_BYTES: int = 6
 
 # The amount of characters that will be appended to random filename from original filename when X-Use-Original-Filename header value is set to 1
 ORIGINAL_FILENAME_LENGTH: int = 18
+
+# Path for log file
+LOGGER_FILE_PATH: str = os.path.join(os.getcwd(), 'app', 'logs')
+
+# The maximum size for log file in bytes
+LOGGER_MAX_BYTES: int = 8 * 1024 * 1024
+
+# The amount of log files to backup
+LOGGER_BACKUP_COUNT: int = 5
