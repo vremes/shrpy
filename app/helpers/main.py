@@ -83,7 +83,7 @@ class File:
         if os.path.isfile(file_path) is False:
             return False
 
-        current_app.logger.info(f'Attempting to delete file {file_path}')
+        current_app.logger.info(f'Deleted file {file_path}')
 
         os.remove(file_path)
 
@@ -93,8 +93,13 @@ class File:
         """Check if file is allowed, based on `config.ALLOWED_EXTENSIONS`."""
         if not config.ALLOWED_EXTENSIONS:
             return True
+        
+        allowed = self.extension in config.ALLOWED_EXTENSIONS
 
-        return self.extension in config.ALLOWED_EXTENSIONS
+        if allowed is False:
+            current_app.logger.warning(f'File {self.__file.filename} (detected extension {self.extension}) is not allowed')        
+
+        return allowed
 
     def save(self, save_directory = config.UPLOAD_DIR) -> None:
         """Saves the file to `UPLOAD_DIR`."""
@@ -163,9 +168,14 @@ class ShortUrl:
 
         # Parsed URL must have at least scheme and netloc (e.g. domain name)
         try:
-            return all([parsed.scheme, parsed.netloc]) and parsed.netloc.split('.')[1]
+            valid = all([parsed.scheme, parsed.netloc]) and parsed.netloc.split('.')[1]
         except IndexError:
-            return False
+            valid = False
+
+        if valid is False:
+            current_app.logger.warning(f'URL {self.url} is invalid')
+
+        return valid
 
     def add(self):
         """Inserts the URL and token to database."""
@@ -204,11 +214,16 @@ class ShortUrl:
     def delete(cls, token: str) -> bool:
         """DELETEs URL using given token from database."""
 
-        current_app.logger.info(f'Attempting to delete short URL {token}')
+        url = cls.get_by_token(token)
 
         with closing(cls.get_cursor()) as cursor:
             execute = cursor.execute("DELETE FROM urls WHERE token = ?", (token,))
-            return execute.rowcount > 0
+            deleted = execute.rowcount > 0
+
+            if deleted:
+                current_app.logger.info(f'Deleted short URL for {url} using token {token}')
+
+            return deleted
 
     @staticmethod
     def get_cursor():
