@@ -76,6 +76,12 @@ Config file is located in [/app/config.py](/app/config.py)
 
 `ORIGINAL_FILENAME_LENGTH`: The amount of characters that will be appended to random filename from original filename when `X-Use-Original-Filename` header value is set to `1`.
 
+`LOGGER_FILE_PATH`: Path for log file.
+
+`LOGGER_MAX_BYTES`: The maximum size of log file, in bytes.
+
+`LOGGER_BACKUP_COUNT`: The amount of log files to backup.
+
 ## Headers
 
 `Authorization`: The password for uploading files (`UPLOAD_PASSWORD` in config.py file), simply ignore this header if you don't use a password.

@@ -46,7 +46,12 @@ class File:
         """Returns extension using `python-magic` and `mimetypes`."""
         file_bytes = self.__file.read(config.MAGIC_BUFFER_BYTES)
         mime = from_buffer(file_bytes, mime=True).lower()
-        return guess_extension(mime)
+        ext = guess_extension(mime)
+
+        if ext is None:
+            current_app.logger.error(f'Unable to determine file extension for file {self.__file.filename} - MIME type {mime}')
+
+        return ext
 
     @cached_property
     def original_filename_root(self):
@@ -78,6 +83,8 @@ class File:
         if os.path.isfile(file_path) is False:
             return False
 
+        current_app.logger.info(f'Attempting to delete file {file_path}')
+
         os.remove(file_path)
 
         return True
@@ -95,6 +102,9 @@ class File:
             os.makedirs(save_directory)
 
         save_path = safe_join(save_directory, self.filename)
+
+        current_app.logger.info(f'Saving file {self.__file.filename} to {save_path}')
+        current_app.logger.info(f'URLs: {self.url} - {self.deletion_url}')
 
         # Set file descriptor back to beginning of the file so save works correctly
         self.__file.seek(os.SEEK_SET)
@@ -159,6 +169,10 @@ class ShortUrl:
 
     def add(self):
         """Inserts the URL and token to database."""
+
+        current_app.logger.info(f'Saving short URL for {self.url} as {self.shortened_url}')
+        current_app.logger.info(f'URLs: {self.shortened_url} - {self.deletion_url}')
+
         with closing(self.get_cursor()) as cursor:
             cursor.execute("INSERT INTO urls VALUES (?, ?)", (
                 self.token,
@@ -189,6 +203,9 @@ class ShortUrl:
     @classmethod
     def delete(cls, token: str) -> bool:
         """DELETEs URL using given token from database."""
+
+        current_app.logger.info(f'Attempting to delete short URL {token}')
+
         with closing(cls.get_cursor()) as cursor:
             execute = cursor.execute("DELETE FROM urls WHERE token = ?", (token,))
             return execute.rowcount > 0
