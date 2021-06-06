@@ -2,10 +2,10 @@
 import os
 import secrets
 import sqlite3
-import mimetypes
 from contextlib import closing
 from urllib.parse import urlparse
 from functools import cached_property
+from mimetypes import guess_extension
 
 # pip imports
 from magic import from_buffer
@@ -46,10 +46,7 @@ class File:
         """Returns extension using `python-magic` and `mimetypes`."""
         file_bytes = self.__file.read(config.MAGIC_BUFFER_BYTES)
         mime = from_buffer(file_bytes, mime=True).lower()
-
-        self.add_unsupported_mimetypes()
-
-        return mimetypes.guess_extension(mime)
+        return guess_extension(mime)
 
     @cached_property
     def original_filename_root(self):
@@ -103,11 +100,6 @@ class File:
         self.__file.seek(os.SEEK_SET)
 
         self.__file.save(save_path)
-
-    def add_unsupported_mimetypes(self):
-        """Adds unsupported mimetypes/extensions to `mimetypes` module."""
-        mimetypes.add_type('video/x-m4v', '.m4v')
-        mimetypes.add_type('image/webp', '.webp')
 
     def embed(self) -> FileEmbed:
         """Returns FileEmbed instance for this file."""
