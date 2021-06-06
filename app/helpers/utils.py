@@ -1,6 +1,7 @@
 # standard library imports
 import hmac
 import hashlib
+import mimetypes
 from enum import Enum
 from functools import wraps
 from http import HTTPStatus
@@ -48,6 +49,11 @@ def auth_required(f):
                 abort(HTTPStatus.UNAUTHORIZED)
         return f(*args, **kwargs)
     return decorated_function
+
+def add_unsupported_mimetypes():
+    """Adds unsupported mimetypes/extensions to `mimetypes` module."""
+    mimetypes.add_type('video/x-m4v', '.m4v')
+    mimetypes.add_type('image/webp', '.webp')
 
 class Message(str, Enum):
     # Services

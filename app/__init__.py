@@ -3,7 +3,7 @@ from flask import Flask
 from werkzeug.exceptions import HTTPException
 
 # local imports
-from app.helpers.utils import response
+from app.helpers.utils import response, add_unsupported_mimetypes
 from app.helpers.discord import CustomDiscordWebhook
 
 discord_webhook = CustomDiscordWebhook()
@@ -19,6 +19,9 @@ def create_app():
 
     # Set discord webhook timeout
     discord_webhook.timeout = app.config.get('DISCORD_WEBHOOK_TIMEOUT')
+
+    # Add unsupported mimetypes to mimetypes module
+    add_unsupported_mimetypes()
 
     # jsonify HTTP errors
     @app.errorhandler(HTTPException)
