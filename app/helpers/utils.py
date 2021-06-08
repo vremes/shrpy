@@ -58,11 +58,12 @@ def add_unsupported_mimetypes():
     mimetypes.add_type('video/x-m4v', '.m4v')
     mimetypes.add_type('image/webp', '.webp')
 
-def logger_file_handler() -> RotatingFileHandler:
+def logger_handler() -> RotatingFileHandler:
+    """Returns `logging.handlers.RotatingFileHandler` for logging."""
     if not os.path.isdir(config.LOGGER_FILE_PATH):
         os.makedirs(config.LOGGER_FILE_PATH)
 
-    logfile_path = os.path.join(config.LOGGER_FILE_PATH, 'shrpy.log')
+    logfile_path = os.path.join(config.LOGGER_FILE_PATH, config.LOGGER_FILE_NAME)
 
     handler = RotatingFileHandler(logfile_path, maxBytes=config.LOGGER_MAX_BYTES, backupCount=config.LOGGER_BACKUP_COUNT)
     handler.setFormatter(

@@ -6,7 +6,7 @@ from flask import Flask
 from werkzeug.exceptions import HTTPException
 
 # local imports
-from app.helpers.utils import response, add_unsupported_mimetypes, logger_file_handler
+from app.helpers.utils import response, add_unsupported_mimetypes, logger_handler
 from app.helpers.discord import CustomDiscordWebhook
 
 discord_webhook = CustomDiscordWebhook()
@@ -15,7 +15,8 @@ def create_app():
     app = Flask(__name__)
 
     # Setup logging
-    app.logger.addHandler(logger_file_handler())
+    handler = logger_handler()
+    app.logger.addHandler(handler)
     app.logger.setLevel(logging.INFO)
 
     # Load config.py
