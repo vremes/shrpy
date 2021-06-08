@@ -32,6 +32,9 @@ URL_TOKEN_BYTES: int = 6
 # The amount of characters that will be appended to random filename from original filename when X-Use-Original-Filename header value is set to 1
 ORIGINAL_FILENAME_LENGTH: int = 18
 
+# Filename for log file
+LOGGER_FILE_NAME = 'shrpy.log'
+
 # Path for log file
 LOGGER_FILE_PATH: str = os.path.join(os.getcwd(), 'app', 'logs')
 
