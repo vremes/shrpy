@@ -37,7 +37,7 @@ class FileService:
             discord_webhook.add_embed(
                 f.embed()
             )
-            discord_webhook.send()
+            discord_webhook.execute()
 
         # Return JSON
         return jsonify(url=f.url, delete_url=f.deletion_url)
@@ -104,7 +104,7 @@ class ShortUrlService:
             discord_webhook.add_embed(
                 short_url.embed()
             )
-            discord_webhook.send()
+            discord_webhook.execute()
 
         return jsonify(url=short_url.shortened_url, delete_url=short_url.deletion_url)
 
