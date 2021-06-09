@@ -10,7 +10,6 @@ from http import HTTPStatus
 from logging.handlers import RotatingFileHandler
 
 # pip imports
-from werkzeug.security import safe_str_cmp
 from flask import Response, jsonify, request, abort
 
 # local imports
@@ -47,8 +46,9 @@ def auth_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if config.UPLOAD_PASSWORD:
-            authorization_header = request.headers.get('Authorization')
-            if authorization_header is None or safe_str_cmp(config.UPLOAD_PASSWORD, authorization_header) is False:
+            # Default to empty string if Authorization header is not sent
+            authorization_header = request.headers.get('Authorization', default='')
+            if not hmac.compare_digest(config.UPLOAD_PASSWORD, authorization_header):
                 abort(HTTPStatus.UNAUTHORIZED)
         return f(*args, **kwargs)
     return decorated_function
