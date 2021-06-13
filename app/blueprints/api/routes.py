@@ -4,28 +4,28 @@ from app.helpers.services import FileService, ShortUrlService
 
 api = Blueprint('api', __name__)
 
-@api.route('/sharex/upload')
+@api.get('/sharex/upload')
 def upload_config():
     return FileService.config()
 
-@api.route('/sharex/shorten')
+@api.get('/sharex/shorten')
 def shorten_config():
     return ShortUrlService.config()
 
-@api.route('/upload', methods=['POST'])
+@api.post('/upload')
 @auth_required
 def upload():
     return FileService.create()
 
-@api.route('/delete-file/<hmac_hash>/<filename>')
-def delete_file(hmac_hash, filename):
-    return FileService.delete()
-
-@api.route('/shorten', methods=['POST'])
+@api.post('/shorten')
 @auth_required
 def shorten():
     return ShortUrlService.create()
 
-@api.route('/delete-short-url/<hmac_hash>/<token>')
+@api.get('/delete-short-url/<hmac_hash>/<token>')
 def delete_short_url(hmac_hash, token):
     return ShortUrlService.delete()
+
+@api.get('/delete-file/<hmac_hash>/<filename>')
+def delete_file(hmac_hash, filename):
+    return FileService.delete()

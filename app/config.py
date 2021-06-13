@@ -33,7 +33,7 @@ URL_TOKEN_BYTES: int = 6
 ORIGINAL_FILENAME_LENGTH: int = 18
 
 # Filename for log file
-LOGGER_FILE_NAME = 'shrpy.log'
+LOGGER_FILE_NAME: str = 'shrpy.log'
 
 # Path for log file
 LOGGER_FILE_PATH: str = os.path.join(os.getcwd(), 'app', 'logs')
