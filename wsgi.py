@@ -1,9 +1,10 @@
 import os
+from environs import Env
 from app import create_app
-from dotenv import load_dotenv
 
 # Load .env file
-load_dotenv()
+env = Env()
+env.read_env()
 
 # WSGI instance
 application = create_app()

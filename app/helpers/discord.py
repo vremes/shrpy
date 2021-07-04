@@ -1,5 +1,6 @@
 # standard library imports
 from random import randint
+from functools import cached_property
 
 # pip imports
 from flask import current_app
@@ -13,7 +14,7 @@ class CustomDiscordWebhook(DiscordWebhook):
     def __init__(self, url=None, **kwargs):
         super().__init__(url, **kwargs)
 
-    @property
+    @cached_property
     def is_enabled(self) -> bool:
         """Checks if Discord webhook is enabled."""
         return self.url is not None and len(self.url) > 0

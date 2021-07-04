@@ -39,7 +39,7 @@ class File:
         else:
             filename = custom_filename
 
-        return f'{filename}{self.extension}'
+        return f'{filename}.{self.extension}'
 
     @cached_property
     def extension(self) -> str:
@@ -50,6 +50,8 @@ class File:
 
         if ext is None:
             current_app.logger.error(f'Unable to determine file extension for file {self.__file.filename} - MIME type {mime}')
+
+        ext = ext.replace('.', '')
 
         return ext
 
