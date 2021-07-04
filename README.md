@@ -54,38 +54,30 @@ stdout_logfile=/var/log/shrpy.out.log
 environment=FLASK_SECRET="PLEASE-CHANGE-THIS"
 ```
 ## Configuration
-Config file is located in [/app/config.py](/app/config.py)
+shrpy looks for config values from OS environment variables.
 
-`MAX_CONTENT_LENGTH`: File upload limit, in bytes.
+You can set these environment variables in [.env_example](https://github.com/vremes/shrpy/blob/master/.env_example) and then rename the `.env_example` to `.env`.
 
-`UPLOAD_DIR`: Path to the directory where uploaded files will be saved to.
-
-`ALLOWED_EXTENSIONS`: A list of allowed file extensions, set this to empty list if you want to allow all file extensions.
-
-`UPLOAD_PASSWORD`: Password (str) for `/api/upload` endpoint, you can leave it to `None` if you do not want to use a password.
-
-`DISCORD_WEBHOOKS`: A list of Discord webhook URLs, leave this to empty list to disable this feature.
-
-`DISCORD_WEBHOOK_TIMEOUT`: Timeout for Discord webhook requests, in seconds.
-
-`MAGIC_BUFFER_BYTES`: The amount of bytes `python-magic` will read from uploaded file to determine its extension, the default value of `2048` should be fine.
-
-`FILE_TOKEN_BYTES`: The amount of bytes `secrets.token_urlsafe` will use to generate filenames.
-
-`URL_TOKEN_BYTES`: The amount of bytes `secrets.token_urlsafe` will use to generate shortened URLs.
-
-`ORIGINAL_FILENAME_LENGTH`: The amount of characters that will be appended to random filename from original filename when `X-Use-Original-Filename` header value is set to `1`.
-
-`LOGGER_FILE_NAME`: Filename for log file, defaults to `shrpy.log`.
-
-`LOGGER_FILE_PATH`: Path for log file.
-
-`LOGGER_MAX_BYTES`: The maximum size of log file, in bytes.
-
-`LOGGER_BACKUP_COUNT`: The amount of log files to backup.
+| Key | Type | Description |
+| ------ | ------ | ------ |
+| `FLASK_SECRET` | `str` | Secret key for Flask application, see https://flask.palletsprojects.com/en/2.0.x/config/#SECRET_KEY |
+| `MAX_CONTENT_LENGTH` | `int` | Maximum upload size in bytes, defaults to `~16mb` |
+| `UPLOAD_DIR` | `str` | Path for uploaded files, defaults to `/app/uploads/` |
+| `ALLOWED_EXTENSIONS` | `str` | Allowed file extensions separated by semicolon, defaults to `png;jpg;jpeg;gif;webm;mp4;webp;txt;m4v` |
+| `UPLOAD_PASSWORD` | `str` | The password to protect `/api/upload` and `/api/shorten` endpoints, defaults to `None` |
+| `DISCORD_WEBHOOKS` | `str` | Discord webhook URLs separated by semicolon, defaults to `None` |
+| `DISCORD_WEBHOOK_TIMEOUT` | `int` | Timeout for Discord webhook requests in seconds, defaults to `5` |
+| `MAGIC_BUFFER_BYTES` | `int` | The amount of bytes `python-magic` will read from uploaded file to determine its extension, defaults to `2048` |
+| `FILE_TOKEN_BYTES` | `int` | The amount of bytes `secrets.token_urlsafe` will use to generate filenames, defaults to `12` |
+| `URL_TOKEN_BYTES` | `int` |  The amount of bytes `secrets.token_urlsafe` will use to generate shortened URLs, defaults to `6` |
+| `ORIGINAL_FILENAME_LENGTH` | `int` | The amount of characters which will be appended to random filename from original filename when `X-Use-Original-Filename` header value is set to `1`, defaults to `18` |
+| `LOGGER_FILE_NAME` | `str` | Filename for log file, defaults to `shrpy.log` |
+| `LOGGER_FILE_PATH` | `str` | Path for log file, defaults to `/app/logs/` |
+| `LOGGER_MAX_BYTES` | `int` | The maximum size of log file in bytes, defaults to `~8mb` |
+| `LOGGER_BACKUP_COUNT` | `int` | The amount of log files to backup, defaults to `5` |
 
 ## Headers
 
-`Authorization`: The password for uploading files (`UPLOAD_PASSWORD` in config.py file), simply ignore this header if you don't use a password.
+`Authorization`: The password for uploading files, simply ignore this header if you don't use a password.
 
 `X-Use-Original-Filename`: Allows you to decide if you want to include the file's original filename when saving uploaded files, this is enabled by default, set the value to `0` to disable.
