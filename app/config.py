@@ -2,6 +2,7 @@ import os
 from environs import Env
 
 env = Env()
+env.read_env()
 
 # Maximum upload file size, defaults to ~16mb
 MAX_CONTENT_LENGTH = env.int('MAX_CONTENT_LENGTH', 16 * 1024 * 1024)
