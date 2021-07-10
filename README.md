@@ -51,7 +51,6 @@ autostart=true
 autorestart=true
 stderr_logfile=/var/log/shrpy.err.log
 stdout_logfile=/var/log/shrpy.out.log
-environment=FLASK_SECRET="PLEASE-CHANGE-THIS"
 ```
 ## Configuration
 shrpy looks for config values from OS environment variables.
