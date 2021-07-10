@@ -58,26 +58,27 @@ shrpy looks for config values from OS environment variables.
 
 You can set these environment variables in [.env_example](https://github.com/vremes/shrpy/blob/master/.env_example) and then rename the `.env_example` to `.env`.
 
-| Key | Type | Description |
+| Key | Type | Default value | Description |
+| ------ | ------ | ------ | ------ |
+| `FLASK_SECRET` | `str` |  `None` | Secret key for Flask application, see https://flask.palletsprojects.com/en/2.0.x/config/#SECRET_KEY |
+| `MAX_CONTENT_LENGTH` | `int` | `16777216` | Maximum upload size in bytes, see https://flask.palletsprojects.com/en/2.0.x/config/#MAX_CONTENT_LENGTH |
+| `UPLOAD_DIR` | `str` | `/app/uploads/` | Path for uploaded files. |
+| `ALLOWED_EXTENSIONS` | `str` | `png;jpg;jpeg;gif;webm;mp4;webp;txt;m4v` | Allowed file extensions separated by semicolon. |
+| `UPLOAD_PASSWORD` | `str` | `None` | The password to protect `/api/upload` and `/api/shorten` endpoints. |
+| `DISCORD_WEBHOOKS` | `str` | `None` | Discord webhook URLs separated by semicolon. |
+| `DISCORD_WEBHOOK_TIMEOUT` | `int` | `5` | Timeout for Discord webhook requests in seconds. |
+| `MAGIC_BUFFER_BYTES` | `int` | `2048` | The amount of bytes `python-magic` will read from uploaded file to determine its extension. |
+| `FILE_TOKEN_BYTES` | `int` | `12` | The amount of bytes `secrets.token_urlsafe` will use to generate filenames. |
+| `URL_TOKEN_BYTES` | `int` | `6` | The amount of bytes `secrets.token_urlsafe` will use to generate shortened URLs. |
+| `ORIGINAL_FILENAME_LENGTH` | `int` | `18` | The amount of characters which will be appended to random filename from original filename when `X-Use-Original-Filename` header value is set to `1`. |
+| `LOGGER_FILE_NAME` | `str` | `shrpy.log` | Filename for log file. |
+| `LOGGER_FILE_PATH` | `str` | `/app/logs/` | Path for log file. |
+| `LOGGER_MAX_BYTES` | `int` | `8388608` | The maximum size of log file in bytes. |
+| `LOGGER_BACKUP_COUNT` | `int` | `5` | The amount of log files to backup. |
+
+## HTTP Headers
+
+| Name | Example value | Description |
 | ------ | ------ | ------ |
-| `FLASK_SECRET` | `str` | Secret key for Flask application, see https://flask.palletsprojects.com/en/2.0.x/config/#SECRET_KEY |
-| `MAX_CONTENT_LENGTH` | `int` | Maximum upload size in bytes, defaults to `~16mb` |
-| `UPLOAD_DIR` | `str` | Path for uploaded files, defaults to `/app/uploads/` |
-| `ALLOWED_EXTENSIONS` | `str` | Allowed file extensions separated by semicolon, defaults to `png;jpg;jpeg;gif;webm;mp4;webp;txt;m4v` |
-| `UPLOAD_PASSWORD` | `str` | The password to protect `/api/upload` and `/api/shorten` endpoints, defaults to `None` |
-| `DISCORD_WEBHOOKS` | `str` | Discord webhook URLs separated by semicolon, defaults to `None` |
-| `DISCORD_WEBHOOK_TIMEOUT` | `int` | Timeout for Discord webhook requests in seconds, defaults to `5` |
-| `MAGIC_BUFFER_BYTES` | `int` | The amount of bytes `python-magic` will read from uploaded file to determine its extension, defaults to `2048` |
-| `FILE_TOKEN_BYTES` | `int` | The amount of bytes `secrets.token_urlsafe` will use to generate filenames, defaults to `12` |
-| `URL_TOKEN_BYTES` | `int` |  The amount of bytes `secrets.token_urlsafe` will use to generate shortened URLs, defaults to `6` |
-| `ORIGINAL_FILENAME_LENGTH` | `int` | The amount of characters which will be appended to random filename from original filename when `X-Use-Original-Filename` header value is set to `1`, defaults to `18` |
-| `LOGGER_FILE_NAME` | `str` | Filename for log file, defaults to `shrpy.log` |
-| `LOGGER_FILE_PATH` | `str` | Path for log file, defaults to `/app/logs/` |
-| `LOGGER_MAX_BYTES` | `int` | The maximum size of log file in bytes, defaults to `~8mb` |
-| `LOGGER_BACKUP_COUNT` | `int` | The amount of log files to backup, defaults to `5` |
-
-## Headers
-
-`Authorization`: The password for uploading files, simply ignore this header if you don't use a password.
-
-`X-Use-Original-Filename`: Allows you to decide if you want to include the file's original filename when saving uploaded files, this is enabled by default, set the value to `0` to disable.
+`Authorization` | `hunter2` | The plaintext password for file uploads and URL shortening, simply ignore this header if you don't use a password. |
+|`X-Use-Original-Filename` | `0` | Allows you to decide if you want to include the file's original filename when saving uploaded files, this is enabled by default, set the value to `0` to disable. |
