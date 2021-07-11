@@ -11,6 +11,9 @@ ShareX URL shortening config is available at `/api/sharex/shorten`.
 ShareX upload config is available at `/api/sharex/upload`.
 
 # Setup (NGINX, Gunicorn, Supervisor)
+
+**To run Flask development server use `python3 wsgi.py`, the steps below are for production deployment.**
+
 1. Install NGINX and Supervisor:  
 `apt install nginx supervisor`
 3. Install Gunicorn and Gevent:  
