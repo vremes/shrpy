@@ -6,23 +6,41 @@
 
 I created this mostly for my personal use, but if you have any suggestions, ideas or improvements feel free to open a new issue (pull requests are also welcome).
 
-# Setup
-1. Install requirements: `pip3 install -r requirements.txt`
-2. Rename the `.env_example` file to `.env` and set `FLASK_SECRET` to something super secret
-3. Use WSGI server of your choice and WSGI-compatible web server to deploy it, for example [Gunicorn](https://gunicorn.org/) and [NGINX](https://www.nginx.com/) ([tutorial](https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-ubuntu-18-04))
-* If you want to run Flask development server, simply type `python3 wsgi.py`
-
-Once deployment is successful, open your ShareX and go to `Destinations` -> `Custom uploader settings` -> `Import` -> `From URL` and enter your URL (e.g. `https://example.com/api/sharex/upload`) then click `OK`.
-
 ShareX URL shortening config is available at `/api/sharex/shorten`.
 
 ShareX upload config is available at `/api/sharex/upload`.
 
-## Example NGINX config
+# Setup (NGINX, Gunicorn, Supervisor)
+1. Install NGINX and Supervisor:  
+`apt install nginx supervisor`
+3. Install Gunicorn and Gevent:  
+`pip3 install gunicorn gevent`
+4. Clone the repository:  
+`git clone https://github.com/vremes/shrpy.git /var/www/shrpy/`
+6. Install requirements:  
+`pip3 install -r /var/www/shrpy/requirements.txt`
+7. Setup environment variables:  
+`cd /var/www/shrpy/app/`  
+`cp .env_example .env`  
+`nano .env` and set `FLASK_SECRET` to secret string, e.g. `FLASK_SECRET="XYZ"`  
+9. Configure supervisor to run gunicorn:  
+`nano /etc/supervisor/conf.d/shrpy.conf`
+```
+[program:shrpy]
+directory=/var/www/shrpy
+command=gunicorn --bind=127.0.0.1:8000 --worker-class=gevent wsgi:application
+autostart=true
+autorestart=true
+stderr_logfile=/var/log/shrpy.err.log
+stdout_logfile=/var/log/shrpy.out.log
+```
+7. Update supervisor and configure NGINX:  
+`supervisorctl update`  
+`nano /etc/nginx/sites-available/shrpy.conf`  
 ```nginx
 server {
     listen 80;
-    server_name mydomain.com;
+    server_name example.com; # <==== Change to your domain name
     client_max_body_size 16M;
 
     location / {
@@ -33,25 +51,31 @@ server {
     location /uploads {
         alias /var/www/shrpy/app/uploads/;
     }
-    
-    # Optional headers
-    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains";
-    add_header Content-Security-Policy "default-src 'self';";
-    add_header X-Frame-Options "DENY";
-    add_header X-Content-Type-Options "nosniff";
-    add_header Referrer-Policy "strict-origin-when-cross-origin";
+}
+ ```
+8. Enable NGINX config and restart:  
+`ln -s /etc/nginx/sites-available/shrpy.conf /etc/nginx/sites-enabled/`  
+`service nginx restart`  
+8. Visit `/api/sharex/upload` or `/api/sharex/shorten` route on your domain and it should be running
+```json
+{
+        "Body":"MultipartFormData",
+        "DeletionURL":"$json:delete_url$",
+        "DestinationType":"ImageUploader, FileUploader",
+        "ErrorMessage":"$json:status$",
+        "FileFormName":"file",
+        "Headers":{
+            "Authorization":"YOUR-UPLOAD-PASSWORD-HERE",
+            "X-Use-Original-Filename":1
+        },
+        "Name":"example.com (File uploader)",
+        "RequestMethod":"POST",
+        "RequestURL":"http://example.com/api/upload",
+        "URL":"$json:url$",
+        "Version":"1.0.0"
 }
 ```
-## Example [Supervisord](http://supervisord.org/) config
-```config
-[program:shrpy]
-directory=/var/www/shrpy
-command=gunicorn --bind=127.0.0.1:8000 wsgi:application
-autostart=true
-autorestart=true
-stderr_logfile=/var/log/shrpy.err.log
-stdout_logfile=/var/log/shrpy.out.log
-```
+---
 ## Configuration
 shrpy looks for config values from OS environment variables.
 
