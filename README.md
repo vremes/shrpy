@@ -20,7 +20,7 @@ ShareX upload config is available at `/api/sharex/upload`.
 6. Install requirements:  
 `pip3 install -r /var/www/shrpy/requirements.txt`
 7. Setup environment variables:  
-`cd /var/www/shrpy/app/`  
+`cd /var/www/shrpy/`  
 `cp .env_example .env`  
 `nano .env` and set `FLASK_SECRET` to secret string, e.g. `FLASK_SECRET="XYZ"`  
 9. Configure supervisor to run gunicorn:  
