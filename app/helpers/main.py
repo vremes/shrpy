@@ -51,9 +51,7 @@ class File:
         if ext is None:
             current_app.logger.error(f'Unable to determine file extension for file {self.__file.filename} - MIME type {mime}')
 
-        ext = ext.replace('.', '')
-
-        return ext
+        return ext.replace('.', '')
 
     @cached_property
     def original_filename_root(self):
@@ -120,11 +118,10 @@ class File:
 
     def embed(self) -> FileEmbed:
         """Returns FileEmbed instance for this file."""
-        embed = FileEmbed(
+        return FileEmbed(
             content_url=self.url, 
             deletion_url=self.deletion_url
         )
-        return embed
 
 class InvalidFileException(Exception):
     """Raised when `File` is initialized using wrong `file_instance`."""
@@ -193,13 +190,12 @@ class ShortUrl:
 
     def embed(self) -> ShortUrlEmbed:
         """Returns ShorturlEmbed instance for this URL."""
-        embed = ShortUrlEmbed(
+        return ShortUrlEmbed(
             content_url=self.shortened_url, 
             deletion_url=self.deletion_url, 
             original_url=self.url, 
             shortened_url=self.shortened_url
         )
-        return embed
 
     @classmethod
     def get_by_token(cls, token: str):

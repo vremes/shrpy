@@ -34,7 +34,7 @@ def create_app():
     # jsonify HTTP errors
     @app.errorhandler(HTTPException)
     def handle_exception(e):
-        return response(e.code, e.name, description=e.description)
+        return response(e.code, e.name)
 
     # Import blueprints
     from app.blueprints.api.routes import api
