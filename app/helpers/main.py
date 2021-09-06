@@ -135,9 +135,7 @@ class InvalidFileException(Exception):
 
 class ShortUrl:
     def __init__(self, url: str):
-        url = ''.join(url.lower().split())
-
-        if not url.startswith(('https://', 'http://')):
+        if not url.lower().startswith(('https://', 'http://')):
             url = f'https://{url}'
 
         self.url = url
