@@ -49,7 +49,8 @@ class File:
         ext = guess_extension(mime)
 
         if ext is None:
-            return current_app.logger.error(f'Unable to determine file extension for file {self.__file.filename} - MIME type {mime}')
+            current_app.logger.error(f'Unable to determine file extension for file {self.__file.filename} - MIME type {mime}')
+            return ''
 
         return ext.replace('.', '')
 
