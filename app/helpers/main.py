@@ -19,79 +19,69 @@ from app.helpers.utils import create_hmac_hexdigest
 from app.helpers.discord import FileEmbed, ShortUrlEmbed
 
 class File:
-    def __init__(self, file_instance: FileStorage, use_original_filename=True):
-        """Class for uploaded files which takes the `werkzeug.datastructures.FileStorage` from `flask.Request.files` as first parameter."""
-        if isinstance(file_instance, FileStorage) is False:
-            raise InvalidFileException(file_instance)
+    def __init__(self, file_storage: FileStorage):
+        if isinstance(file_storage, FileStorage) is False:
+            raise InvalidFileException(file_storage)
 
-        self.use_original_filename = use_original_filename
+        self.__file = file_storage
 
-        # Private FileStorage instance
-        self.__file = file_instance
+        # splitext returns tuple
+        # make sure filename is safe by using secure_filename
+        self.__filename, self.__extension = os.path.splitext(
+            secure_filename(self.__file.filename)
+        )
 
+        self.use_original_filename = True
+    
     @cached_property
-    def filename(self) -> str:
-        """Returns random filename."""
-        custom_filename = secrets.token_urlsafe(config.FILE_TOKEN_BYTES)
+    def root(self) -> str:
+        """Returns filename root for the file."""
+        filename = secrets.token_urlsafe(config.FILE_TOKEN_BYTES)
 
         if self.use_original_filename:
-            filename = f'{custom_filename}-{self.original_filename_root[:config.ORIGINAL_FILENAME_LENGTH]}'
-        else:
-            filename = custom_filename
+            original_filename_shortened = self.__filename[:config.ORIGINAL_FILENAME_LENGTH]
+            filename =  f'{filename}-{original_filename_shortened}'
 
-        return f'{filename}.{self.extension}'
+        return filename
 
     @cached_property
     def extension(self) -> str:
-        """Returns extension using `python-magic` and `mimetypes`."""
+        """Returns guessed extension for the file."""
         file_bytes = self.__file.read(config.MAGIC_BUFFER_BYTES)
         mime = from_buffer(file_bytes, mime=True).lower()
         ext = guess_extension(mime)
 
         if ext is None:
             current_app.logger.error(f'Unable to determine file extension for file {self.__file.filename} - MIME type {mime}')
-            return ''
+            return None
 
-        return ext.replace('.', '')
+        ext = ext.lower().replace('.', '')
+        return ext
 
     @cached_property
-    def original_filename_root(self):
-        """Returns the original filename without extension."""
-        sec_filename = secure_filename(self.__file.filename.lower())
-        root, ext = os.path.splitext(sec_filename)
-        return root
+    def filename(self):
+        return f'{self.root}.{self.extension}'
 
     @cached_property
     def hmac(self) -> str:
         """Returns HMAC digest calculated from filename, `flask.current_app.secret_key` is used as secret."""
         return create_hmac_hexdigest(self.filename, current_app.secret_key)
-    
+
     @cached_property
     def url(self) -> str:
         """Returns file URL using `flask.url_for`."""
         return url_for('main.uploads', filename=self.filename, _external=True)
-    
+
     @cached_property
     def deletion_url(self) -> str:
         """Returns deletion URL using `flask.url_for`."""
         return url_for('api.delete_file', hmac_hash=self.hmac, filename=self.filename, _external=True)
 
-    @staticmethod
-    def delete(filename: str) -> bool:
-        """Deletes the file from `config.UPLOAD_DIR`, if it exists."""
-        file_path = safe_join(config.UPLOAD_DIR, filename)
-
-        if os.path.isfile(file_path) is False:
-            return False
-
-        current_app.logger.info(f'Deleted file {file_path}')
-
-        os.remove(file_path)
-
-        return True
-
     def is_allowed(self) -> bool:
         """Check if file is allowed, based on `config.ALLOWED_EXTENSIONS`."""
+        if not self.extension:
+            return False
+
         if not config.ALLOWED_EXTENSIONS:
             return True
         
@@ -115,7 +105,7 @@ class File:
         # Set file descriptor back to beginning of the file so save works correctly
         self.__file.seek(os.SEEK_SET)
 
-        self.__file.save(save_path)
+        return self.__file.save(save_path)
 
     def embed(self) -> FileEmbed:
         """Returns FileEmbed instance for this file."""
@@ -123,6 +113,20 @@ class File:
             content_url=self.url, 
             deletion_url=self.deletion_url
         )
+
+    @staticmethod
+    def delete(filename: str) -> bool:
+        """Deletes the file from `config.UPLOAD_DIR`, if it exists."""
+        file_path = safe_join(config.UPLOAD_DIR, filename)
+
+        if os.path.isfile(file_path) is False:
+            return False
+
+        current_app.logger.info(f'Deleted file {file_path}')
+
+        os.remove(file_path)
+
+        return True
 
 class InvalidFileException(Exception):
     """Raised when `File` is initialized using wrong `file_instance`."""
