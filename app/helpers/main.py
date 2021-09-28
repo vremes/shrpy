@@ -27,7 +27,9 @@ class File:
 
         # splitext returns tuple
         # make sure filename is safe by using secure_filename
-        self.__filename, self.__extension = os.path.splitext(self.__file.filename)
+        self.__filename, self.__extension = os.path.splitext(
+            secure_filename(self.__file.filename)
+        )
 
         self.use_original_filename = True
     
@@ -39,9 +41,8 @@ class File:
         if self.use_original_filename:
             original_filename_shortened = self.__filename[:config.ORIGINAL_FILENAME_LENGTH]
             filename =  f'{filename}-{original_filename_shortened}'
-        
-        # Make sure filename is secure to avoid path traversal etc.
-        return secure_filename(filename)
+
+        return filename
 
     @cached_property
     def extension(self) -> str:
@@ -52,9 +53,10 @@ class File:
 
         if ext is None:
             current_app.logger.error(f'Unable to determine file extension for file {self.__file.filename} - MIME type {mime}')
-            return ''
+            return None
 
-        return ext.replace('.', '')
+        ext = ext.lower().replace('.', '')
+        return ext
 
     @cached_property
     def filename(self):
@@ -77,6 +79,9 @@ class File:
 
     def is_allowed(self) -> bool:
         """Check if file is allowed, based on `config.ALLOWED_EXTENSIONS`."""
+        if not self.extension:
+            return False
+
         if not config.ALLOWED_EXTENSIONS:
             return True
         
