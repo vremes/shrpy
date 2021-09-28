@@ -87,7 +87,6 @@ You can set these environment variables in [.env_example](https://github.com/vre
 | Key | Type | Default value | Description |
 | ------ | ------ | ------ | ------ |
 | `FLASK_SECRET` | `str` |  `None` | Secret key for Flask application, see https://flask.palletsprojects.com/en/2.0.x/config/#SECRET_KEY |
-| `MAX_CONTENT_LENGTH` | `int` | `16777216` | Maximum upload size in bytes, see https://flask.palletsprojects.com/en/2.0.x/config/#MAX_CONTENT_LENGTH |
 | `UPLOAD_DIR` | `str` | `/app/uploads/` | Path for uploaded files. |
 | `ALLOWED_EXTENSIONS` | `str` | `png;jpg;jpeg;gif;webm;mp4;webp;txt;m4v` | Allowed file extensions separated by semicolon. |
 | `UPLOAD_PASSWORD` | `str` | `None` | The password to protect `/api/upload` and `/api/shorten` endpoints. |
