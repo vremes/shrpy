@@ -1,5 +1,5 @@
 from flask import Blueprint
-from app.helpers.services import ShortUrlService, FileService
+from app.services import ShortUrlService, FileService
 
 main = Blueprint('main', __name__)
 

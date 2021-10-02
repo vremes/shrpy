@@ -37,8 +37,8 @@ def create_app():
         return response(e.code, e.name)
 
     # Import blueprints
-    from app.blueprints.api.routes import api
-    from app.blueprints.main.routes import main
+    from app.blueprints.api import api
+    from app.blueprints.main import main
 
     # Register blueprints
     app.register_blueprint(main)
