@@ -2,7 +2,6 @@
 import os
 import secrets
 import sqlite3
-from contextlib import closing
 from urllib.parse import urlparse
 from functools import cached_property
 from mimetypes import guess_extension
@@ -138,6 +137,25 @@ class InvalidFileException(Exception):
         file_instance_type = type(self.file_instance)
         return f'{self.file_instance} ({file_instance_type}) is not an instance of werkzeug.datastructures.FileStorage ({FileStorage})'
 
+
+class Database:
+    __connection = None
+
+    @classmethod
+    def get_instance(cls) -> sqlite3.Cursor:
+        if cls.__connection is None:
+            cls.__connection = sqlite3.connect('urls.db', check_same_thread=False)
+
+            # Enable autocommit & change row factory
+            cls.__connection.isolation_level = None
+            cls.__connection.row_factory = sqlite3.Row
+
+            # Create default DB and setup cursor
+            cls.__connection.execute("CREATE TABLE IF NOT EXISTS urls (token VARCHAR(10) NOT NULL PRIMARY KEY, url TEXT NOT NULL)")
+            cls.cursor = cls.__connection.cursor()
+
+        return cls.cursor
+
 class ShortUrl:
     def __init__(self, url: str):
         if not url.lower().startswith(('https://', 'http://')):
@@ -185,11 +203,12 @@ class ShortUrl:
         current_app.logger.info(f'Saving short URL for {self.url} as {self.shortened_url}')
         current_app.logger.info(f'URLs: {self.shortened_url} - {self.deletion_url}')
 
-        with closing(self.get_cursor()) as cursor:
-            cursor.execute("INSERT INTO urls VALUES (?, ?)", (
-                self.token,
-                self.url
-            ))
+        cursor = Database.get_instance()
+
+        cursor.execute("INSERT INTO urls VALUES (?, ?)", (
+            self.token,
+            self.url
+        ))
 
     def embed(self) -> ShortUrlEmbed:
         """Returns ShorturlEmbed instance for this URL."""
@@ -204,11 +223,12 @@ class ShortUrl:
     def get_by_token(cls, token: str):
         """Returns the URL for given token from database."""
         result = None
-        with closing(cls.get_cursor()) as cursor:
-            row = cursor.execute("SELECT url FROM urls WHERE token = ?", (token,))
-            url_row = row.fetchone()
-            if url_row:
-                result = url_row['url']
+        
+        cursor = Database.get_instance()
+        row = cursor.execute("SELECT url FROM urls WHERE token = ?", (token,))
+        url_row = row.fetchone()
+        if url_row:
+            result = url_row['url']
         return result
 
     @classmethod
@@ -217,23 +237,12 @@ class ShortUrl:
 
         url = cls.get_by_token(token)
 
-        with closing(cls.get_cursor()) as cursor:
-            execute = cursor.execute("DELETE FROM urls WHERE token = ?", (token,))
-            deleted = execute.rowcount > 0
+        cursor = Database.get_instance()
+        execute = cursor.execute("DELETE FROM urls WHERE token = ?", (token,))
+        deleted = execute.rowcount > 0
 
-            if deleted:
-                current_app.logger.info(f'Deleted short URL for {url} using token {token}')
+        if deleted:
+            current_app.logger.info(f'Deleted short URL for {url} using token {token}')
 
-            return deleted
+        return deleted
 
-    @staticmethod
-    def get_cursor():
-        conn = sqlite3.connect('urls.db')
-
-        # Enable autocommit & change row factory
-        conn.isolation_level = None
-        conn.row_factory = sqlite3.Row
-
-        conn.execute("CREATE TABLE IF NOT EXISTS urls (token VARCHAR(10) NOT NULL PRIMARY KEY, url TEXT NOT NULL)")
-        cursor = conn.cursor()
-        return cursor
