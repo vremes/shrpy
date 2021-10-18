@@ -11,7 +11,7 @@ from flask import (
 # local imports
 from app import discord_webhook
 from app.helpers.main import File, ShortUrl
-from app.helpers.utils import Message, response, create_hmac_hexdigest, is_valid_digest
+from app.helpers.utils import HMACMixin, Message, response, is_valid_digest
 
 class FileService:
     @staticmethod
@@ -45,9 +45,9 @@ class FileService:
 
     @staticmethod
     def delete() -> Response:
-        filename = request.view_args.get('filename')
+        filename = request.view_args.get('filename',)
         hmac_hash = request.view_args.get('hmac_hash')
-        new_hmac_hash = create_hmac_hexdigest(filename, current_app.secret_key)
+        new_hmac_hash = HMACMixin(filename, current_app.secret_key).hmac_hexdigest()
 
         # If digest is invalid
         if is_valid_digest(hmac_hash, new_hmac_hash) is False:
@@ -113,7 +113,7 @@ class ShortUrlService:
     def delete() -> Response:
         token = request.view_args.get('token')
         hmac_hash = request.view_args.get('hmac_hash')
-        new_hmac_hash = create_hmac_hexdigest(token, current_app.secret_key)
+        new_hmac_hash = HMACMixin(token, current_app.secret_key).hmac_hexdigest()
 
         # If digest is invalid
         if is_valid_digest(hmac_hash, new_hmac_hash) is False:

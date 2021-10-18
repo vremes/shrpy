@@ -1,6 +1,7 @@
 # standard library imports
 import os
 import hmac
+import sqlite3
 import logging
 import hashlib
 import mimetypes
@@ -15,15 +16,9 @@ from flask import Response, jsonify, request, abort
 # local imports
 from app import config
 
-def create_hmac_hexdigest(hmac_data: str, secret_key: str = None) -> str:
-    """Creates HMAC hexdigest using the hmac_data and returns it."""
-    hmac_hash = hmac.new(
-        secret_key.encode('utf-8'),
-        hmac_data.encode('utf-8'),
-        hashlib.sha256
-    ).hexdigest()
-
-    return hmac_hash
+def initialize_db():
+    cursor = Database.get_instance()
+    return cursor.execute("CREATE TABLE IF NOT EXISTS urls (token VARCHAR(10) NOT NULL PRIMARY KEY, url TEXT NOT NULL)")
 
 def is_valid_digest(hash_a: str, hash_b: str) -> bool:
     """Compares two hashes using `hmac.compare_digest`."""
@@ -89,3 +84,49 @@ class Message(str, Enum):
 
     FILE_UPLOADED = 'New file has been uploaded!'
     URL_SHORTENED = 'URL has been shortened!'
+
+class HMACMixin:
+    """
+    Mixin class for HMAC.
+    """
+    hmac_payload = ''
+    hmac_secret = ''
+
+    __hmac = None
+    __digest = hashlib.sha256
+
+    def __init__(self, payload: str = None, secret: str = None):
+        self.hmac_payload = payload or ''
+        self.hmac_secret = secret or ''
+
+    def create_hmac(self) -> hmac.HMAC:
+        self.__hmac = hmac.new(
+            self.hmac_secret.encode('utf-8'),
+            self.hmac_payload.encode('utf-8'),
+            self.__digest
+        )
+        return self.__hmac
+
+    def hmac_hexdigest(self) -> str:
+        if self.__hmac is None:
+            self.create_hmac()
+        return self.__hmac.hexdigest()
+
+class Database:
+    """
+    Database singleton.
+    """
+    __connection = None
+
+    @classmethod
+    def get_instance(cls) -> sqlite3.Cursor:
+        if cls.__connection is None:
+            cls.__connection = sqlite3.connect('urls.db', check_same_thread=False)
+
+            # Enable autocommit & change row factory
+            cls.__connection.isolation_level = None
+            cls.__connection.row_factory = sqlite3.Row
+
+            cls.cursor = cls.__connection.cursor()
+
+        return cls.cursor

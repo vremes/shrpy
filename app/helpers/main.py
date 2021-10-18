@@ -1,7 +1,6 @@
 # standard library imports
 import os
 import secrets
-import sqlite3
 from urllib.parse import urlparse
 from functools import cached_property
 from mimetypes import guess_extension
@@ -14,10 +13,10 @@ from werkzeug.utils import safe_join, secure_filename
 
 # local imports
 from app import config
-from app.helpers.utils import create_hmac_hexdigest
+from app.helpers.utils import HMACMixin, Database
 from app.helpers.discord import FileEmbed, ShortUrlEmbed
 
-class File:
+class File(HMACMixin):
     def __init__(self, file_storage: FileStorage):
         if isinstance(file_storage, FileStorage) is False:
             raise InvalidFileException(file_storage)
@@ -31,7 +30,11 @@ class File:
         )
 
         self.use_original_filename = True
-    
+
+        # HMAC
+        self.hmac_payload = self.filename
+        self.hmac_secret = current_app.secret_key
+
     @cached_property
     def root(self) -> str:
         """Returns filename root for the file."""
@@ -62,11 +65,6 @@ class File:
         return f'{self.root}.{self.extension}'
 
     @cached_property
-    def hmac(self) -> str:
-        """Returns HMAC digest calculated from filename, `flask.current_app.secret_key` is used as secret."""
-        return create_hmac_hexdigest(self.filename, current_app.secret_key)
-
-    @cached_property
     def url(self) -> str:
         """Returns file URL using `flask.url_for`."""
         return url_for('main.uploads', filename=self.filename, _external=True)
@@ -74,7 +72,8 @@ class File:
     @cached_property
     def deletion_url(self) -> str:
         """Returns deletion URL using `flask.url_for`."""
-        return url_for('api.delete_file', hmac_hash=self.hmac, filename=self.filename, _external=True)
+        hexdigest = self.hmac_hexdigest()
+        return url_for('api.delete_file', hmac_hash=hexdigest, filename=self.filename, _external=True)
 
     def is_allowed(self) -> bool:
         """Check if file is allowed, based on `config.ALLOWED_EXTENSIONS`."""
@@ -137,40 +136,20 @@ class InvalidFileException(Exception):
         file_instance_type = type(self.file_instance)
         return f'{self.file_instance} ({file_instance_type}) is not an instance of werkzeug.datastructures.FileStorage ({FileStorage})'
 
-
-class Database:
-    __connection = None
-
-    @classmethod
-    def get_instance(cls) -> sqlite3.Cursor:
-        if cls.__connection is None:
-            cls.__connection = sqlite3.connect('urls.db', check_same_thread=False)
-
-            # Enable autocommit & change row factory
-            cls.__connection.isolation_level = None
-            cls.__connection.row_factory = sqlite3.Row
-
-            # Create default DB and setup cursor
-            cls.__connection.execute("CREATE TABLE IF NOT EXISTS urls (token VARCHAR(10) NOT NULL PRIMARY KEY, url TEXT NOT NULL)")
-            cls.cursor = cls.__connection.cursor()
-
-        return cls.cursor
-
-class ShortUrl:
+class ShortUrl(HMACMixin):
     def __init__(self, url: str):
         if not url.lower().startswith(('https://', 'http://')):
             url = f'https://{url}'
 
         self.url = url
 
+        # HMAC
+        self.hmac_payload = self.token
+        self.hmac_secret = current_app.secret_key
+
     @cached_property
     def token(self) -> str:
         return secrets.token_urlsafe(config.URL_TOKEN_BYTES)
-
-    @cached_property
-    def hmac(self) -> str:
-        """Returns HMAC hash calculated from token, `flask.current_app.secret_key` is used as secret."""
-        return create_hmac_hexdigest(self.token, current_app.secret_key)
 
     @cached_property
     def shortened_url(self) -> str:
@@ -180,7 +159,8 @@ class ShortUrl:
     @cached_property
     def deletion_url(self) -> str:
         """Returns deletion URL using `flask.url_for`."""
-        return url_for('api.delete_short_url', hmac_hash=self.hmac, token=self.token, _external=True)
+        hexdigest = self.hmac_hexdigest()
+        return url_for('api.delete_short_url', hmac_hash=hexdigest, token=self.token, _external=True)
 
     def is_valid(self) -> bool:
         """Checks if URL is valid"""
