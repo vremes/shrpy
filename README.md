@@ -59,23 +59,10 @@ server {
 8. Enable NGINX config and restart:  
 `ln -s /etc/nginx/sites-available/shrpy.conf /etc/nginx/sites-enabled/`  
 `service nginx restart`  
-8. Visit `/api/sharex/upload` or `/api/sharex/shorten` route on your domain and it should be running
+8. Visit the root (`/`) path on your domain and it should be running:
 ```json
 {
-        "Body":"MultipartFormData",
-        "DeletionURL":"$json:delete_url$",
-        "DestinationType":"ImageUploader, FileUploader",
-        "ErrorMessage":"$json:status$",
-        "FileFormName":"file",
-        "Headers":{
-            "Authorization":"YOUR-UPLOAD-PASSWORD-HERE",
-            "X-Use-Original-Filename":1
-        },
-        "Name":"example.com (File uploader)",
-        "RequestMethod":"POST",
-        "RequestURL":"http://example.com/api/upload",
-        "URL":"$json:url$",
-        "Version":"1.0.0"
+  "message": "It works! Beep boop."
 }
 ```
 ---

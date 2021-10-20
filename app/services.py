@@ -17,7 +17,7 @@ class FileService:
     @staticmethod
     def create() -> Response:
         uploaded_file = request.files.get('file')
-        
+
         if uploaded_file is None:
             return response(HTTPStatus.BAD_REQUEST, Message.INVALID_FILE)
 
@@ -45,7 +45,7 @@ class FileService:
 
     @staticmethod
     def delete() -> Response:
-        filename = request.view_args.get('filename',)
+        filename = request.view_args.get('filename')
         hmac_hash = request.view_args.get('hmac_hash')
         new_hmac_hash = HMACMixin(filename, current_app.secret_key).hmac_hexdigest()
 
