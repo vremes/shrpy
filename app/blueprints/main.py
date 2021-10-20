@@ -1,7 +1,11 @@
-from flask import Blueprint
+from flask import Blueprint, jsonify
 from app.services import ShortUrlService, FileService
 
 main = Blueprint('main', __name__)
+
+@main.get('/')
+def index():
+    return jsonify(message='It works! Beep boop.')
 
 @main.get('/uploads/<filename>')
 def uploads(filename):
