@@ -10,6 +10,9 @@ UPLOAD_DIR = env.str('UPLOAD_DIR', os.path.join(os.getcwd(), 'app', 'uploads'))
 # List of allowed file extensions, defaults to ['png', 'jpg', 'jpeg', 'gif', 'webm', 'mp4', 'webp', 'txt', 'm4v']
 ALLOWED_EXTENSIONS = env.list('ALLOWED_EXTENSIONS', 'png;jpg;jpeg;gif;webm;mp4;webp;txt;m4v', delimiter=';')
 
+# Custom list of additional mimetype/extension pairs
+CUSTOM_EXTENSIONS = env.dict('CUSTOM_EXTENSIONS', 'video/x-m4v=m4v,image/webp=webp')
+
 # Password for file uploads, defaults to None
 UPLOAD_PASSWORD = env.str('UPLOAD_PASSWORD', None)
 
