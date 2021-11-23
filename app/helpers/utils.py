@@ -50,8 +50,10 @@ def auth_required(f):
 
 def add_unsupported_mimetypes():
     """Adds unsupported mimetypes/extensions to `mimetypes` module."""
-    mimetypes.add_type('video/x-m4v', '.m4v')
-    mimetypes.add_type('image/webp', '.webp')
+    for mime, ext in config.CUSTOM_EXTENSIONS.items():
+        mime = mime.lower().strip()
+        ext = f'.{ext.lower().strip()}'
+        mimetypes.add_type(mime, ext)
 
 def logger_handler() -> RotatingFileHandler:
     """Returns `logging.handlers.RotatingFileHandler` for logging."""

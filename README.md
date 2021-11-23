@@ -76,6 +76,7 @@ You can set these environment variables in [.env_example](https://github.com/vre
 | `FLASK_SECRET` | `str` |  `None` | Secret key for Flask application, see https://flask.palletsprojects.com/en/2.0.x/config/#SECRET_KEY |
 | `UPLOAD_DIR` | `str` | `/app/uploads/` | Path for uploaded files. |
 | `ALLOWED_EXTENSIONS` | `str` | `png;jpg;jpeg;gif;webm;mp4;webp;txt;m4v` | Allowed file extensions separated by semicolon. |
+| `CUSTOM_EXTENSIONS` | `str` | `video/x-m4v=m4v,image/webp=webp` | Additional `mimetype=extension` pairs for Python `mimetypes` module |
 | `UPLOAD_PASSWORD` | `str` | `None` | The password to protect `/api/upload` and `/api/shorten` endpoints. |
 | `DISCORD_WEBHOOKS` | `str` | `None` | Discord webhook URLs separated by semicolon. |
 | `DISCORD_WEBHOOK_TIMEOUT` | `int` | `5` | Timeout for Discord webhook requests in seconds. |
