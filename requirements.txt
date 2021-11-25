@@ -1,5 +1,5 @@
 Flask == 2.0.1
 discord-webhook >= 0.13.0
-environs
-python-magic; platform_system != "Windows"
-python-magic-bin; platform_system == "Windows"
+environs == 9.3.2
+python-magic == 0.4.24; platform_system != "Windows"
+python-magic-bin == 0.4.14; platform_system == "Windows"
