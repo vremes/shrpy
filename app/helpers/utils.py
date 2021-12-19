@@ -87,12 +87,12 @@ class Message(str, Enum):
     FILE_UPLOADED = 'New file has been uploaded!'
     URL_SHORTENED = 'URL has been shortened!'
 
-class HMACMixin:
+class HMAC:
     """
-    Mixin class for HMAC.
+    Utility class for HMAC.
     """
-    hmac_payload = ''
-    hmac_secret = ''
+    hmac_payload = None
+    hmac_secret = None
 
     __hmac = None
     __digest = hashlib.sha256
