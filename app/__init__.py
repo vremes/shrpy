@@ -6,8 +6,8 @@ from flask import Flask
 from werkzeug.exceptions import HTTPException
 
 # local imports
-from app.helpers.utils import response, add_unsupported_mimetypes, logger_handler, initialize_db
-from app.helpers.discord import CustomDiscordWebhook
+from app.core.utils import response, add_unsupported_mimetypes, logger_handler, initialize_db
+from app.core.discord import CustomDiscordWebhook
 
 discord_webhook = CustomDiscordWebhook()
 

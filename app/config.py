@@ -1,11 +1,11 @@
-import os
 from environs import Env
+from pathlib import Path
 
 env = Env()
 env.read_env()
 
 # Path for uploaded files, defaults to /app/uploads/
-UPLOAD_DIR = env.str('UPLOAD_DIR', os.path.join(os.getcwd(), 'app', 'uploads'))
+UPLOAD_DIR = env.str('UPLOAD_DIR', f'{Path.cwd()}/app/uploads')
 
 # List of allowed file extensions, defaults to ['png', 'jpg', 'jpeg', 'gif', 'webm', 'mp4', 'webp', 'txt', 'm4v']
 ALLOWED_EXTENSIONS = env.list('ALLOWED_EXTENSIONS', 'png;jpg;jpeg;gif;webm;mp4;webp;txt;m4v', delimiter=';')
@@ -38,7 +38,7 @@ ORIGINAL_FILENAME_LENGTH = env.int('ORIGINAL_FILENAME_LENGTH', 18)
 LOGGER_FILE_NAME = env.str('LOGGER_FILE_NAME', 'shrpy.log')
 
 # Path for log file, defaults to /app/logs/
-LOGGER_FILE_PATH = env.str('LOGGER_FILE_PATH', os.path.join(os.getcwd(), 'app', 'logs'))
+LOGGER_FILE_PATH = env.str('LOGGER_FILE_PATH', f'{Path.cwd()}/app/logs')
 
 # The maximum size for log file in bytes, defaults to ~8mb
 LOGGER_MAX_BYTES = env.int('LOGGER_MAX_BYTES', 8 * 1024 * 1024)

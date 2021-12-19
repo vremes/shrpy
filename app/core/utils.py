@@ -1,13 +1,13 @@
 # standard library imports
-import os
-import hmac
-import sqlite3
-import logging
-import hashlib
-import mimetypes
 from enum import Enum
+from pathlib import Path
+from hashlib import sha256
 from functools import wraps
 from http import HTTPStatus
+from mimetypes import add_type
+from hmac import compare_digest, new
+from sqlite3 import Cursor, Row, connect
+from logging import Formatter
 from logging.handlers import RotatingFileHandler
 
 # pip imports
@@ -19,10 +19,6 @@ from app import config
 def initialize_db():
     cursor = Database.get_instance()
     return cursor.execute("CREATE TABLE IF NOT EXISTS urls (token VARCHAR(10) NOT NULL PRIMARY KEY, url TEXT NOT NULL)")
-
-def is_valid_digest(hash_a: str, hash_b: str) -> bool:
-    """Compares two hashes using `hmac.compare_digest`."""
-    return hmac.compare_digest(hash_a, hash_b)
 
 def response(status_code: int = HTTPStatus.OK, status: str = HTTPStatus.OK.phrase, **kwargs) -> Response:
     """Wrapper for `flask.jsonify`
@@ -43,7 +39,7 @@ def auth_required(f):
         if config.UPLOAD_PASSWORD:
             # Default to empty string if Authorization header is not sent
             authorization_header = request.headers.get('Authorization', default='')
-            if not hmac.compare_digest(config.UPLOAD_PASSWORD, authorization_header):
+            if not compare_digest(config.UPLOAD_PASSWORD, authorization_header):
                 abort(HTTPStatus.UNAUTHORIZED)
         return f(*args, **kwargs)
     return decorated_function
@@ -53,21 +49,31 @@ def add_unsupported_mimetypes():
     for mime, ext in config.CUSTOM_EXTENSIONS.items():
         mime = mime.lower().strip()
         ext = f'.{ext.lower().strip()}'
-        mimetypes.add_type(mime, ext)
+        add_type(mime, ext)
 
 def logger_handler() -> RotatingFileHandler:
     """Returns `logging.handlers.RotatingFileHandler` for logging."""
-    if not os.path.isdir(config.LOGGER_FILE_PATH):
-        os.makedirs(config.LOGGER_FILE_PATH)
+    path = Path(config.LOGGER_FILE_PATH)
 
-    logfile_path = os.path.join(config.LOGGER_FILE_PATH, config.LOGGER_FILE_NAME)
+    if path.exists() is False:
+        path.mkdir()
+
+    logfile_path = path / config.LOGGER_FILE_NAME
 
     handler = RotatingFileHandler(logfile_path, maxBytes=config.LOGGER_MAX_BYTES, backupCount=config.LOGGER_BACKUP_COUNT)
     handler.setFormatter(
-        logging.Formatter('%(asctime)s | %(module)s.%(funcName)s | %(levelname)s | %(message)s')
+        Formatter('%(asctime)s | %(module)s.%(funcName)s | %(levelname)s | %(message)s')
     )
 
     return handler
+
+def create_hmac_hash(hmac_payload: str, hmac_secret_key: str) -> str:
+    """Returns sha256 HMAC hexdigest."""
+    return new(
+        hmac_secret_key.encode('utf-8'),
+        hmac_payload.encode('utf-8'),
+        sha256
+    ).hexdigest()
 
 class Message(str, Enum):
     # Services
@@ -87,33 +93,6 @@ class Message(str, Enum):
     FILE_UPLOADED = 'New file has been uploaded!'
     URL_SHORTENED = 'URL has been shortened!'
 
-class HMAC:
-    """
-    Utility class for HMAC.
-    """
-    hmac_payload = None
-    hmac_secret = None
-
-    __hmac = None
-    __digest = hashlib.sha256
-
-    def __init__(self, payload: str = None, secret: str = None):
-        self.hmac_payload = payload or ''
-        self.hmac_secret = secret or ''
-
-    def create_hmac(self) -> hmac.HMAC:
-        self.__hmac = hmac.new(
-            self.hmac_secret.encode('utf-8'),
-            self.hmac_payload.encode('utf-8'),
-            self.__digest
-        )
-        return self.__hmac
-
-    def hmac_hexdigest(self) -> str:
-        if self.__hmac is None:
-            self.create_hmac()
-        return self.__hmac.hexdigest()
-
 class Database:
     """
     Database singleton.
@@ -121,13 +100,13 @@ class Database:
     __connection = None
 
     @classmethod
-    def get_instance(cls) -> sqlite3.Cursor:
+    def get_instance(cls) -> Cursor:
         if cls.__connection is None:
-            cls.__connection = sqlite3.connect('urls.db', check_same_thread=False)
+            cls.__connection = connect('urls.db', check_same_thread=False)
 
             # Enable autocommit & change row factory
             cls.__connection.isolation_level = None
-            cls.__connection.row_factory = sqlite3.Row
+            cls.__connection.row_factory = Row
 
             cls.cursor = cls.__connection.cursor()
 

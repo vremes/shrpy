@@ -13,10 +13,10 @@ from werkzeug.utils import safe_join, secure_filename
 
 # local imports
 from app import config
-from app.helpers.utils import HMAC, Database
+from app.core.utils import Database
 
-class File(HMAC):
-    def __init__(self, file_storage: FileStorage, hmac_secret_key: str):
+class File:
+    def __init__(self, file_storage: FileStorage):
         if isinstance(file_storage, FileStorage) is False:
             raise InvalidFileException(file_storage)
 
@@ -28,10 +28,6 @@ class File(HMAC):
         ).stem
 
         self.use_original_filename = True
-
-        # HMAC
-        self.hmac_payload = self.filename
-        self.hmac_secret = hmac_secret_key
 
     @cached_property
     def root(self) -> str:
@@ -99,16 +95,12 @@ class InvalidFileException(Exception):
         file_instance_type = type(self.file_instance)
         return f'{self.file_instance} ({file_instance_type}) is not an instance of werkzeug.datastructures.FileStorage ({FileStorage})'
 
-class ShortUrl(HMAC):
-    def __init__(self, url: str, hmac_secret_key: str):
+class ShortUrl:
+    def __init__(self, url: str):
         if not url.lower().startswith(('https://', 'http://')):
             url = f'https://{url}'
 
         self.url = url
-
-        # HMAC
-        self.hmac_payload = self.token
-        self.hmac_secret = hmac_secret_key
 
     @cached_property
     def token(self) -> str:
