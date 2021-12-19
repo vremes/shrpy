@@ -8,7 +8,7 @@ from requests.exceptions import Timeout
 from discord_webhook import DiscordWebhook, DiscordEmbed
 
 # local imports
-from app.helpers.utils import Message
+from app.core.utils import Message
 
 class CustomDiscordWebhook(DiscordWebhook):
     def __init__(self, url=None, **kwargs):

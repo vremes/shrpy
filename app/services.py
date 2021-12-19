@@ -1,5 +1,6 @@
 # standard library imports
 from http import HTTPStatus
+from hmac import compare_digest
 
 # pip imports
 from flask import (
@@ -10,9 +11,9 @@ from flask import (
 
 # local imports
 from app import discord_webhook
-from app.helpers.main import File, ShortUrl
-from app.helpers.discord import ShortUrlEmbed, FileEmbed
-from app.helpers.utils import HMAC, Message, response, is_valid_digest
+from app.core.main import File, ShortUrl
+from app.core.discord import ShortUrlEmbed, FileEmbed
+from app.core.utils import Message, response, create_hmac_hash
 
 class FileService:
     @staticmethod
@@ -24,7 +25,7 @@ class FileService:
 
         # Our own class which utilises werkzeug.datastructures.FileStorage
         use_og_filename = bool(request.headers.get('X-Use-Original-Filename', type=int))
-        f = File(uploaded_file, current_app.secret_key)
+        f = File(uploaded_file)
         f.use_original_filename = use_og_filename
 
         # Check if file is allowed
@@ -34,8 +35,9 @@ class FileService:
         # Save the file
         f.save()
 
+        hmac_hash = create_hmac_hash(f.filename, current_app.secret_key)
         file_url = url_for('main.uploads', filename=f.filename, _external=True)
-        deletion_url = url_for('api.delete_file', hmac_hash=f.hmac_hexdigest(), filename=f.filename, _external=True)
+        deletion_url = url_for('api.delete_file', hmac_hash=hmac_hash, filename=f.filename, _external=True)
 
         current_app.logger.info(f'Saved file: {f.filename}, URL: {file_url}, deletion URL: {deletion_url}')
 
@@ -53,10 +55,10 @@ class FileService:
     def delete() -> Response:
         filename = request.view_args.get('filename')
         hmac_hash = request.view_args.get('hmac_hash')
-        new_hmac_hash = HMAC(filename, current_app.secret_key).hmac_hexdigest()
+        new_hmac_hash = create_hmac_hash(filename, current_app.secret_key)
 
         # If digest is invalid
-        if is_valid_digest(hmac_hash, new_hmac_hash) is False:
+        if compare_digest(hmac_hash, new_hmac_hash) is False:
             abort(HTTPStatus.NOT_FOUND)
 
         if File.delete(filename) is False:
@@ -100,7 +102,7 @@ class ShortUrlService:
         if url is None:
             return response(HTTPStatus.BAD_REQUEST, Message.INVALID_URL)
 
-        short_url = ShortUrl(url, current_app.secret_key)
+        short_url = ShortUrl(url)
 
         if short_url.is_valid() is False:
             return response(HTTPStatus.UNPROCESSABLE_ENTITY, Message.INVALID_URL)
@@ -108,8 +110,9 @@ class ShortUrlService:
         # Add URL to database
         short_url.add()
 
+        hmac_hash = create_hmac_hash(short_url.token, current_app.secret_key)
         shortened_url = url_for('main.short_url', token=short_url.token, _external=True)
-        deletion_url = url_for('api.delete_short_url', hmac_hash=short_url.hmac_hexdigest(), token=short_url.token, _external=True)
+        deletion_url = url_for('api.delete_short_url', hmac_hash=hmac_hash, token=short_url.token, _external=True)
 
         current_app.logger.info(f'Saved short URL: {shortened_url} for {short_url.url}, deletion URL: {deletion_url}')
 
@@ -126,10 +129,10 @@ class ShortUrlService:
     def delete() -> Response:
         token = request.view_args.get('token')
         hmac_hash = request.view_args.get('hmac_hash')
-        new_hmac_hash = HMAC(token, current_app.secret_key).hmac_hexdigest()
+        new_hmac_hash = create_hmac_hash(token, current_app.secret_key)
 
         # If digest is invalid
-        if is_valid_digest(hmac_hash, new_hmac_hash) is False:
+        if compare_digest(hmac_hash, new_hmac_hash) is False:
             abort(HTTPStatus.NOT_FOUND)
 
         if ShortUrl.delete(token) is False:
