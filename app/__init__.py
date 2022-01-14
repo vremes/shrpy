@@ -6,9 +6,15 @@ from flask import Flask
 from werkzeug.exceptions import HTTPException
 
 # local imports
-from app.core.utils import response, add_unsupported_mimetypes, logger_handler, initialize_db
 from app.core.discord import CustomDiscordWebhook
+from app.core.utils import (
+    response,
+    add_unsupported_mimetypes,
+    logger_handler,
+    setup_db
+)
 
+db = setup_db()
 discord_webhook = CustomDiscordWebhook()
 
 def create_app():
@@ -30,9 +36,6 @@ def create_app():
 
     # Add unsupported mimetypes to mimetypes module
     add_unsupported_mimetypes()
-
-    # Initialize db
-    initialize_db()
 
     # jsonify HTTP errors
     @app.errorhandler(HTTPException)

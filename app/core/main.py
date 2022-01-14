@@ -12,8 +12,7 @@ from werkzeug.datastructures import FileStorage
 from werkzeug.utils import safe_join, secure_filename
 
 # local imports
-from app import config
-from app.core.utils import Database
+from app import config, db
 
 class File:
     def __init__(self, file_storage: FileStorage):
@@ -45,8 +44,12 @@ class File:
         """Returns guessed extension for the file."""
         file_bytes = self.__file.read(config.MAGIC_BUFFER_BYTES)
         mime = from_buffer(file_bytes, mime=True).lower()
-        ext = guess_extension(mime).lower().replace('.', '')
-        return ext
+        ext = guess_extension(mime)
+
+        if not ext:
+            return None
+
+        return ext.replace('.', '')
 
     @cached_property
     def filename(self):
@@ -120,9 +123,7 @@ class ShortUrl:
 
     def add(self):
         """Inserts the URL and token to database."""
-        cursor = Database.get_instance()
-
-        cursor.execute("INSERT INTO urls VALUES (?, ?)", (
+        db.execute("INSERT INTO urls VALUES (?, ?)", (
             self.token,
             self.url
         ))
@@ -132,8 +133,7 @@ class ShortUrl:
         """Returns the URL for given token from database."""
         result = None
 
-        cursor = Database.get_instance()
-        row = cursor.execute("SELECT url FROM urls WHERE token = ?", (token,))
+        row = db.execute("SELECT url FROM urls WHERE token = ?", (token,))
         url_row = row.fetchone()
         if url_row:
             result = url_row['url']
@@ -142,8 +142,7 @@ class ShortUrl:
     @staticmethod
     def delete(token: str) -> bool:
         """DELETEs URL using given token from database."""
-        cursor = Database.get_instance()
-        execute = cursor.execute("DELETE FROM urls WHERE token = ?", (token,))
+        execute = db.execute("DELETE FROM urls WHERE token = ?", (token,))
         deleted = execute.rowcount > 0
 
         return deleted

@@ -1,6 +1,6 @@
 from flask import Blueprint
 from app.core.utils import auth_required
-from app.services import FileService, ShortUrlService
+from app.core.services import FileService, ShortUrlService
 
 api = Blueprint('api', __name__)
 

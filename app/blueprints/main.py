@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify
-from app.services import ShortUrlService, FileService
+from app.core.services import ShortUrlService, FileService
 
 main = Blueprint('main', __name__)
 
