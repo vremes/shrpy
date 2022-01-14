@@ -7,9 +7,6 @@ from flask import current_app
 from requests.exceptions import Timeout
 from discord_webhook import DiscordWebhook, DiscordEmbed
 
-# local imports
-from app.core.utils import Message
-
 class CustomDiscordWebhook(DiscordWebhook):
     def __init__(self, url=None, **kwargs):
         super().__init__(url, **kwargs)
@@ -38,8 +35,8 @@ class CustomDiscordEmbed(DiscordEmbed):
         self.deletion_url = kwargs.get('deletion_url')
 
         # Add markdown links to embed
-        self.add_embed_field(name=Message.URL, value=f'**[{Message.CLICK_HERE_TO_VIEW}]({self.content_url})**')
-        self.add_embed_field(name=Message.DELETION_URL, value=f'**[{Message.CLICK_HERE_TO_DELETE}]({self.deletion_url})**')
+        self.add_embed_field(name='URL', value=f'**[Click here to view]({self.content_url})**')
+        self.add_embed_field(name='Deletion URL', value=f'**[Click here to delete]({self.deletion_url})**')
 
         # Set random color for embed
         self.set_color(
@@ -53,7 +50,7 @@ class FileEmbed(CustomDiscordEmbed):
         """Represents DiscordEmbed for files."""
         super().__init__(**kwargs)
 
-        self.set_title(Message.FILE_UPLOADED)
+        self.set_title('New file has been uploaded!')
         self.set_description(self.content_url)
         self.set_image(url=self.content_url)
 
@@ -62,7 +59,7 @@ class ShortUrlEmbed(CustomDiscordEmbed):
         """Represents DiscordEmbed for short URLs."""
         super().__init__(**kwargs)
 
-        self.set_title(Message.URL_SHORTENED)
+        self.set_title('URL has been shortened!')
         self.set_description('{} => {}'.format(
             kwargs.get('original_url'),
             kwargs.get('shortened_url')

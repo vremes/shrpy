@@ -1,12 +1,11 @@
 # standard library imports
-from enum import Enum
 from pathlib import Path
 from hashlib import sha256
 from functools import wraps
 from http import HTTPStatus
 from mimetypes import add_type
 from hmac import compare_digest, new
-from sqlite3 import Cursor, Row, connect
+from sqlite3 import Row, connect
 from logging import Formatter
 from logging.handlers import RotatingFileHandler
 
@@ -15,10 +14,6 @@ from flask import Response, jsonify, request, abort
 
 # local imports
 from app import config
-
-def initialize_db():
-    cursor = Database.get_instance()
-    return cursor.execute("CREATE TABLE IF NOT EXISTS urls (token VARCHAR(10) NOT NULL PRIMARY KEY, url TEXT NOT NULL)")
 
 def response(status_code: int = HTTPStatus.OK, status: str = HTTPStatus.OK.phrase, **kwargs) -> Response:
     """Wrapper for `flask.jsonify`
@@ -75,39 +70,13 @@ def create_hmac_hash(hmac_payload: str, hmac_secret_key: str) -> str:
         sha256
     ).hexdigest()
 
-class Message(str, Enum):
-    # Services
-    INVALID_FILE = 'Invalid file'
-    INVALID_FILE_TYPE = 'Invalid file type'
-    FILE_DELETED = 'This file has been deleted, you can now close this page'
+def setup_db():
+    """Connects to SQLite3 database and returns the connection cursor."""
+    connection = connect('shrpy.db', check_same_thread=False)
+    connection.isolation_level = None
+    connection.row_factory = Row
 
-    INVALID_URL = 'Invalid URL'
-    URL_DELETED = 'This short URL has been deleted, you can now close this page'
+    cursor = connection.cursor()
+    cursor.execute("CREATE TABLE IF NOT EXISTS urls (token VARCHAR(10) NOT NULL PRIMARY KEY, url TEXT NOT NULL)")
 
-    # Embeds
-    URL = 'URL'
-    DELETION_URL = 'Deletion URL'
-    CLICK_HERE_TO_VIEW = 'Click here to view'
-    CLICK_HERE_TO_DELETE = 'Click here to delete'
-
-    FILE_UPLOADED = 'New file has been uploaded!'
-    URL_SHORTENED = 'URL has been shortened!'
-
-class Database:
-    """
-    Database singleton.
-    """
-    __connection = None
-
-    @classmethod
-    def get_instance(cls) -> Cursor:
-        if cls.__connection is None:
-            cls.__connection = connect('urls.db', check_same_thread=False)
-
-            # Enable autocommit & change row factory
-            cls.__connection.isolation_level = None
-            cls.__connection.row_factory = Row
-
-            cls.cursor = cls.__connection.cursor()
-
-        return cls.cursor
+    return cursor

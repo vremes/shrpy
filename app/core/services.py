@@ -13,7 +13,7 @@ from flask import (
 from app import discord_webhook
 from app.core.main import File, ShortUrl
 from app.core.discord import ShortUrlEmbed, FileEmbed
-from app.core.utils import Message, response, create_hmac_hash
+from app.core.utils import response, create_hmac_hash
 
 class FileService:
     @staticmethod
@@ -21,7 +21,7 @@ class FileService:
         uploaded_file = request.files.get('file')
 
         if uploaded_file is None:
-            return response(HTTPStatus.BAD_REQUEST, Message.INVALID_FILE)
+            return response(HTTPStatus.BAD_REQUEST, 'Invalid file.')
 
         # Our own class which utilises werkzeug.datastructures.FileStorage
         use_og_filename = bool(request.headers.get('X-Use-Original-Filename', type=int))
@@ -30,7 +30,7 @@ class FileService:
 
         # Check if file is allowed
         if f.is_allowed() is False:
-            return response(HTTPStatus.UNPROCESSABLE_ENTITY, Message.INVALID_FILE_TYPE)
+            return response(HTTPStatus.UNPROCESSABLE_ENTITY, 'Invalid file type.')
 
         # Save the file
         f.save()
@@ -66,7 +66,7 @@ class FileService:
 
         current_app.logger.info(f'Deleted file {filename}')
 
-        return response(message=Message.FILE_DELETED)
+        return response(message='This file has been deleted, you can now close this page.')
     
     @staticmethod
     def config() -> Response:
@@ -100,12 +100,12 @@ class ShortUrlService:
         url = request.form.get('url')
 
         if url is None:
-            return response(HTTPStatus.BAD_REQUEST, Message.INVALID_URL)
+            return response(HTTPStatus.BAD_REQUEST, 'Invalid URL, missing url parameter in request body.')
 
         short_url = ShortUrl(url)
 
         if short_url.is_valid() is False:
-            return response(HTTPStatus.UNPROCESSABLE_ENTITY, Message.INVALID_URL)
+            return response(HTTPStatus.UNPROCESSABLE_ENTITY, 'Invalid URL.')
 
         # Add URL to database
         short_url.add()
@@ -138,7 +138,7 @@ class ShortUrlService:
         if ShortUrl.delete(token) is False:
             abort(HTTPStatus.GONE)
 
-        return response(message=Message.URL_DELETED)
+        return response(message='This short URL has been deleted, you can now close this page.')
 
     @staticmethod
     def config() -> Response:
