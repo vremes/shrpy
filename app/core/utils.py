@@ -10,22 +10,28 @@ from logging import Formatter
 from logging.handlers import RotatingFileHandler
 
 # pip imports
-from flask import Response, jsonify, request, abort
+from werkzeug.exceptions import HTTPException
+from flask import Response, jsonify, abort, request
 
 # local imports
 from app import config
 
-def response(status_code: int = HTTPStatus.OK, status: str = HTTPStatus.OK.phrase, **kwargs) -> Response:
-    """Wrapper for `flask.jsonify`
+def http_error_handler(exception: HTTPException, **kwargs) -> Response:
+    """Error handler for `werkzeug.exceptions.HTTPException`.
 
-    :param int status_code: HTTP status code, defaults to `200`
-    :param str status: HTTP status message or your own custom status, defaults to `OK`
-    :param **kwargs: Arbitrary keyword arguments, these will be added to the returned `Response` as JSON key/value pairs
-    :return flask.jsonify (flask.Response)
+    Args:
+        exception (HTTPException): HTTPException instance
+
+    Returns:
+        Response: flask.Response
     """
-    resp = jsonify(status_code=status_code, status=status, **kwargs)
-    resp.status_code = status_code
-    return resp
+    response = jsonify(
+        status_code=exception.code,
+        status=exception.description,
+        **kwargs
+    )
+    response.status_code = exception.code
+    return response
 
 def auth_required(f):
     """Check HTTP `Authorization` header against the value of `config.UPLOAD_PASSWORD`, calls `flask.abort` if the password does not match."""
