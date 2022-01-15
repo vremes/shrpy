@@ -1,5 +1,6 @@
 __pycache__/
 uploads/
+.vscode/
 *.db
 .env
 logs/
