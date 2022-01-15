@@ -8,7 +8,7 @@ from werkzeug.exceptions import HTTPException
 # local imports
 from app.core.discord import CustomDiscordWebhook
 from app.core.utils import (
-    response,
+    http_error_handler,
     add_unsupported_mimetypes,
     logger_handler,
     setup_db
@@ -40,7 +40,7 @@ def create_app():
     # jsonify HTTP errors
     @app.errorhandler(HTTPException)
     def handle_exception(e):
-        return response(e.code, e.name)
+        return http_error_handler(e)
 
     # Import blueprints
     from app.blueprints.api import api
