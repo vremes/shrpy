@@ -122,7 +122,7 @@ class ShortUrlService:
             )
             discord_webhook.execute()
 
-        return jsonify(url=shortened_url, delete_url=deletion_url)
+        return jsonify(url=shortened_url)
 
     @staticmethod
     def delete() -> Response:
@@ -155,7 +155,6 @@ class ShortUrlService:
                 "url": "$input$"
             },
             "URL": "$json:url$",
-            "DeletionURL": "$json:delete_url$",
             "ErrorMessage": "$json:status$"
         }
         return jsonify(cfg)
