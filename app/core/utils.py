@@ -1,13 +1,12 @@
 # standard library imports
-from pathlib import Path
+from sys import stdout
 from hashlib import sha256
 from functools import wraps
 from http import HTTPStatus
 from mimetypes import add_type
 from hmac import compare_digest, new
 from sqlite3 import Row, connect
-from logging import Formatter
-from logging.handlers import RotatingFileHandler
+from logging import Formatter, StreamHandler
 
 # pip imports
 from werkzeug.exceptions import HTTPException
@@ -52,20 +51,12 @@ def add_unsupported_mimetypes():
         ext = f'.{ext.lower().strip()}'
         add_type(mime, ext)
 
-def logger_handler() -> RotatingFileHandler:
-    """Returns `logging.handlers.RotatingFileHandler` for logging."""
-    path = Path(config.LOGGER_FILE_PATH)
-
-    if path.exists() is False:
-        path.mkdir()
-
-    logfile_path = path / config.LOGGER_FILE_NAME
-
-    handler = RotatingFileHandler(logfile_path, maxBytes=config.LOGGER_MAX_BYTES, backupCount=config.LOGGER_BACKUP_COUNT)
+def logger_handler() -> StreamHandler:
+    """Returns stdout handler for logging."""
+    handler = StreamHandler(stdout)
     handler.setFormatter(
         Formatter('%(asctime)s | %(module)s.%(funcName)s | %(levelname)s | %(message)s')
     )
-
     return handler
 
 def create_hmac_hash(hmac_payload: str, hmac_secret_key: str) -> str:

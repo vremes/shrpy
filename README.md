@@ -84,10 +84,6 @@ You can set these environment variables in [.env_example](https://github.com/vre
 | `FILE_TOKEN_BYTES` | `int` | `12` | The amount of bytes `secrets.token_urlsafe` will use to generate filenames. |
 | `URL_TOKEN_BYTES` | `int` | `6` | The amount of bytes `secrets.token_urlsafe` will use to generate shortened URLs. |
 | `ORIGINAL_FILENAME_LENGTH` | `int` | `18` | The amount of characters which will be appended to random filename from original filename when `X-Use-Original-Filename` header value is set to `1`. |
-| `LOGGER_FILE_NAME` | `str` | `shrpy.log` | Filename for log file. |
-| `LOGGER_FILE_PATH` | `str` | `/app/logs/` | Path for log file. |
-| `LOGGER_MAX_BYTES` | `int` | `8388608` | The maximum size of log file in bytes. |
-| `LOGGER_BACKUP_COUNT` | `int` | `5` | The amount of log files to backup. |
 
 ## HTTP Headers
 
