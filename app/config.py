@@ -34,14 +34,3 @@ URL_TOKEN_BYTES = env.int('URL_TOKEN_BYTES', 6)
 # The amount of characters which will be appended to random filename from original filename, defaults to 18
 ORIGINAL_FILENAME_LENGTH = env.int('ORIGINAL_FILENAME_LENGTH', 18)
 
-# Filename for log file, defaults to shrpy.log
-LOGGER_FILE_NAME = env.str('LOGGER_FILE_NAME', 'shrpy.log')
-
-# Path for log file, defaults to /app/logs/
-LOGGER_FILE_PATH = env.str('LOGGER_FILE_PATH', f'{Path.cwd()}/app/logs')
-
-# The maximum size for log file in bytes, defaults to ~8mb
-LOGGER_MAX_BYTES = env.int('LOGGER_MAX_BYTES', 8 * 1024 * 1024)
-
-# The amount of log files to backup, defaults to 5
-LOGGER_BACKUP_COUNT = env.int('LOGGER_BACKUP_COUNT', 5)
