@@ -1,4 +1,4 @@
-Flask == 2.1.1
+Flask == 2.1.2
 discord-webhook >= 0.13.0
 environs == 9.5.0
 python-magic == 0.4.25; platform_system != "Windows"
