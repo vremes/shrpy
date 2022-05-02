@@ -61,6 +61,10 @@ def logger_handler() -> StreamHandler:
 
 def create_hmac_hash(hmac_payload: str, hmac_secret_key: str) -> str:
     """Returns sha256 HMAC hexdigest."""
+
+    if hmac_secret_key is None:
+        raise RuntimeError('hmac_secret_key cannot be None, please set a secret for the application in dotenv file!')
+
     return new(
         hmac_secret_key.encode('utf-8'),
         hmac_payload.encode('utf-8'),
