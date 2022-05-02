@@ -25,7 +25,7 @@ ShareX upload config is available at `/api/sharex/upload`.
 7. Setup environment variables:  
 `cd /var/www/shrpy/`  
 `cp .env_template .env`  
-`nano .env` and set `FLASK_SECRET` to secret string, e.g. `FLASK_SECRET="XYZ"`  
+`nano .env` and uncomment `FLASK_SECRET` and set its value to a secret string, e.g. `FLASK_SECRET = "XYZ"`  
 9. Configure supervisor to run gunicorn:  
 `nano /etc/supervisor/conf.d/shrpy.conf`
 ```
