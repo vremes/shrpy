@@ -1,4 +1,5 @@
 # standard library imports
+import logging
 from sys import stdout
 from hashlib import sha256
 from functools import wraps
@@ -6,14 +7,13 @@ from http import HTTPStatus
 from mimetypes import add_type
 from hmac import compare_digest, new
 from sqlite3 import Row, connect
-from logging import Formatter, StreamHandler
 
 # pip imports
 from werkzeug.exceptions import HTTPException
 from flask import Response, jsonify, abort, request
 
 # local imports
-from app import config
+import app
 
 def http_error_handler(exception: HTTPException, **kwargs) -> Response:
     """Error handler for `werkzeug.exceptions.HTTPException`.
@@ -33,31 +33,37 @@ def http_error_handler(exception: HTTPException, **kwargs) -> Response:
     return response
 
 def auth_required(f):
-    """Check HTTP `Authorization` header against the value of `config.UPLOAD_PASSWORD`, calls `flask.abort` if the password does not match."""
+    """Check HTTP `Authorization` header against the value of `application_config.upload_password`, calls `flask.abort` if the password does not match."""
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if config.UPLOAD_PASSWORD:
+        if app.application_config.upload_password:
             # Default to empty string if Authorization header is not sent
             authorization_header = request.headers.get('Authorization', default='')
-            if not compare_digest(config.UPLOAD_PASSWORD, authorization_header):
+            if not compare_digest(app.application_config.upload_password, authorization_header):
                 abort(HTTPStatus.UNAUTHORIZED)
         return f(*args, **kwargs)
     return decorated_function
 
 def add_unsupported_mimetypes():
     """Adds unsupported mimetypes/extensions to `mimetypes` module."""
-    for mime, ext in config.CUSTOM_EXTENSIONS.items():
+    for mime, ext in app.uploaded_file_config.custom_extensions.items():
         mime = mime.lower().strip()
         ext = f'.{ext.lower().strip()}'
         add_type(mime, ext)
 
-def logger_handler() -> StreamHandler:
-    """Returns stdout handler for logging."""
-    handler = StreamHandler(stdout)
+def create_stdout_logger() -> logging.Logger:
+    """Returns stdout logger for logging."""
+    handler = logging.StreamHandler(stdout)
     handler.setFormatter(
-        Formatter('%(asctime)s | %(module)s.%(funcName)s | %(levelname)s | %(message)s')
+        logging.Formatter('%(asctime)s | %(module)s.%(funcName)s | %(levelname)s | %(message)s')
     )
-    return handler
+
+    logger = logging.getLogger('shrpy')
+    logger.addHandler(handler)
+    logger.setLevel(logging.INFO)
+
+    return logger
+
 
 def create_hmac_hash(hmac_payload: str, hmac_secret_key: str) -> str:
     """Returns sha256 HMAC hexdigest."""

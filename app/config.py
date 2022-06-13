@@ -1,26 +1,101 @@
+import logging
 from environs import Env
 from pathlib import Path
+from dataclasses import dataclass
+from app.core.utils import create_stdout_logger
 
-env = Env()
-env.read_env(override=True)
+@dataclass(frozen=True)
+class ApplicationConfig:
+    """Represents a configuration for the web application."""
 
-UPLOAD_DIR = env.path('UPLOAD_DIR', f'{Path.cwd()}/app/uploads')
+    # Password for file uploads and URL shortening
+    upload_password: str
 
-ALLOWED_EXTENSIONS = env.list('ALLOWED_EXTENSIONS', delimiter=';')
+    # A list of discord webhook URLs
+    discord_webhooks: list
 
-CUSTOM_EXTENSIONS = env.dict('CUSTOM_EXTENSIONS')
+    # Timeout for discord webhook requests
+    discord_webhook_timeout: int
 
-UPLOAD_PASSWORD = env.str('UPLOAD_PASSWORD')
+    # Secret key for the application
+    secret_key: str
 
-DISCORD_WEBHOOKS = env.list('DISCORD_WEBHOOKS', delimiter=';')
+    # Logger from logging module
+    logger: logging.Logger
 
-DISCORD_WEBHOOK_TIMEOUT = env.int('DISCORD_WEBHOOK_TIMEOUT')
+    @classmethod
+    def from_environment_variables(cls):
+        env = Env()
+        env.read_env(override=True)
 
-MAGIC_BUFFER_BYTES = env.int('MAGIC_BUFFER_BYTES')
+        upload_password = env.str('UPLOAD_PASSWORD')
+        discord_webhooks = env.list('DISCORD_WEBHOOKS', delimiter=';')
+        discord_webhook_timeout = env.int('DISCORD_WEBHOOK_TIMEOUT')
+        secret_key = env.str('FLASK_SECRET')
+        logger = create_stdout_logger()
 
-FILE_TOKEN_BYTES = env.int('FILE_TOKEN_BYTES')
+        return cls(upload_password, discord_webhooks, discord_webhook_timeout, secret_key, logger)
 
-URL_TOKEN_BYTES = env.int('URL_TOKEN_BYTES')
+@dataclass(frozen=True)
+class UploadedFileConfig:
+    """Represents a configuration for UploadedFile."""
 
-ORIGINAL_FILENAME_LENGTH = env.int('ORIGINAL_FILENAME_LENGTH')
+    # Directory for file uploads
+    upload_directory: str
 
+    # A list of allowed file extensions
+    allowed_extensions: list
+
+    # A dictionary of custom extensions for mimetypes module
+    custom_extensions: dict
+    
+    # Maximum length for original filenames
+    original_filename_length: int
+
+    # If saved files should include original filename
+    use_original_filename: bool
+
+    # Amount of bytes for filename generation
+    file_token_bytes: int
+
+    # Amount of bytes for magic
+    magic_buffer_bytes: int
+
+    @classmethod
+    def from_environment_variables(cls):
+        env = Env()
+        env.read_env(override=True)
+
+        upload_directory = env.path('UPLOAD_DIR', f'{Path.cwd()}/app/uploads')
+        allowed_extensions = env.list('ALLOWED_EXTENSIONS', delimiter=';')
+        custom_extensions = env.dict('CUSTOM_EXTENSIONS')
+        original_filename_length = env.int('ORIGINAL_FILENAME_LENGTH')
+        use_original_filename = env.bool('USE_ORIGINAL_FILENAME')
+        file_token_bytes = env.int('FILE_TOKEN_BYTES')
+        magic_buffer_bytes = env.int('MAGIC_BUFFER_BYTES')
+
+        return cls(
+            upload_directory,
+            allowed_extensions,
+            custom_extensions,
+            original_filename_length,
+            use_original_filename,
+            file_token_bytes,
+            magic_buffer_bytes
+        )
+
+@dataclass(frozen=True)
+class ShortUrlConfig:
+    """Represents a configuration for ShortUrl."""
+
+    # Amount of bytes for URL generation
+    url_token_bytes: int
+
+    @classmethod
+    def from_environment_variables(cls):
+        env = Env()
+        env.read_env(override=True)
+
+        url_token_bytes = env.int('URL_TOKEN_BYTES')
+
+        return cls(url_token_bytes)

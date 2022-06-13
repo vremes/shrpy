@@ -10,10 +10,11 @@ from mimetypes import guess_extension
 # pip imports
 from magic import from_buffer
 from werkzeug.datastructures import FileStorage
-from werkzeug.utils import safe_join, secure_filename
+from werkzeug.utils import secure_filename
 
 # local imports
-from app import config, db
+from app import db
+from app.config import UploadedFileConfig, ShortUrlConfig
 from app.core.utils import create_hmac_hash
 
 @dataclass(frozen=True)
@@ -21,13 +22,14 @@ class UploadedFile:
     """Represents uploaded file."""
     filename: str
     extension: str
+    config: UploadedFileConfig
 
     def is_allowed(self) -> bool:
-        """Check if file is allowed, based on `config.ALLOWED_EXTENSIONS`."""
+        """Check if file is allowed, based on `config.allowed_extensions`."""
         if not self.extension:
             return False
         ext_without_dot = self.extension.replace('.', '')
-        return ext_without_dot in config.ALLOWED_EXTENSIONS
+        return ext_without_dot in self.config.allowed_extensions
 
     def generate_filename_hmac(self, secret: str) -> str:
         """Generates HMAC from filename and extension."""
@@ -39,9 +41,8 @@ class UploadedFile:
         return self.filename + self.extension
 
     @staticmethod
-    def delete(filename: str) -> bool:
+    def delete(file_path: str) -> bool:
         """Deletes a file from upload directory"""
-        file_path = safe_join(config.UPLOAD_DIR, filename)
         path = Path(file_path)
 
         if path.is_file() is False:
@@ -52,22 +53,22 @@ class UploadedFile:
         return True
 
     @classmethod
-    def from_file_storage_instance(cls, file_storage_instance: FileStorage, use_original_filename: bool):
+    def from_file_storage_instance(cls, file_storage_instance: FileStorage, config: UploadedFileConfig):
         """Builds FileData instance from werkzeug.datastructures.FileStorage instance."""
-        filename = token_urlsafe(config.FILE_TOKEN_BYTES)
+        filename = token_urlsafe(config.file_token_bytes)
 
-        if use_original_filename:
+        if config.use_original_filename:
             original_filename_safe = PurePath(secure_filename(file_storage_instance.filename)).stem
-            original_filename_shortened = original_filename_safe[:config.ORIGINAL_FILENAME_LENGTH]
+            original_filename_shortened = original_filename_safe[:config.original_filename_length]
             filename = f'{filename}-{original_filename_shortened}'
 
-        file_bytes = file_storage_instance.read(config.MAGIC_BUFFER_BYTES)
+        file_bytes = file_storage_instance.read(config.magic_buffer_bytes)
         file_storage_instance.seek(SEEK_SET)
 
         mime = from_buffer(file_bytes, mime=True).lower()
         extension = guess_extension(mime)
 
-        return cls(filename, extension)
+        return cls(filename, extension, config)
 
 @dataclass(frozen=True)
 class ShortUrl:
@@ -106,9 +107,9 @@ class ShortUrl:
         return execute.rowcount > 0
 
     @classmethod
-    def from_url(cls, url: str):
+    def from_url(cls, url: str, config: ShortUrlConfig):
         """Creates ShortUrl instance from given URL."""
-        token = token_urlsafe(config.URL_TOKEN_BYTES)
+        token = token_urlsafe(config.url_token_bytes)
 
         if not url.lower().startswith(('https://', 'http://')):
             url = f'https://{url}'

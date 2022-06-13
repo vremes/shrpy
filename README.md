@@ -83,11 +83,11 @@ You can set these environment variables in [.env_template](https://github.com/vr
 | `MAGIC_BUFFER_BYTES` | `int` | `2048` | The amount of bytes `python-magic` will read from uploaded file to determine its extension. |
 | `FILE_TOKEN_BYTES` | `int` | `12` | The amount of bytes `secrets.token_urlsafe` will use to generate filenames. |
 | `URL_TOKEN_BYTES` | `int` | `6` | The amount of bytes `secrets.token_urlsafe` will use to generate shortened URLs. |
-| `ORIGINAL_FILENAME_LENGTH` | `int` | `18` | The amount of characters which will be appended to random filename from original filename when `X-Use-Original-Filename` header value is set to `1`. |
+| `ORIGINAL_FILENAME_LENGTH` | `int` | `18` | The amount of characters which will be appended to random filename from original filename when `USE_ORIGINAL_FILENAME` value is `True`. |
+| `USE_ORIGINAL_FILENAME` | `bool` | `True` | If saved files should include original filename.
 
 ## HTTP Headers
 
 | Name | Example value | Description |
 | ------ | ------ | ------ |
 `Authorization` | `hunter2` | The plaintext password for file uploads and URL shortening, simply ignore this header if you don't use a password. |
-|`X-Use-Original-Filename` | `0` | Allows you to decide if you want to include the file's original filename when saving uploaded files, this is enabled by default, set the value to `0` to disable. |
