@@ -1,38 +1,32 @@
-# standard library imports
-import logging
-
 # pip imports
 from flask import Flask
 from werkzeug.exceptions import HTTPException
 
 # local imports
+from app.config import ApplicationConfig, UploadedFileConfig, ShortUrlConfig
 from app.core.discord import CustomDiscordWebhook
 from app.core.utils import (
     http_error_handler,
     add_unsupported_mimetypes,
-    logger_handler,
     setup_db
 )
 
 db = setup_db()
 discord_webhook = CustomDiscordWebhook()
 
+# Configs
+application_config = ApplicationConfig.from_environment_variables()
+uploaded_file_config = UploadedFileConfig.from_environment_variables()
+short_url_config = ShortUrlConfig.from_environment_variables()
+
 def create_app():
     app = Flask(__name__)
 
-    # Setup logging
-    handler = logger_handler()
-    app.logger.addHandler(handler)
-    app.logger.setLevel(logging.INFO)
-
-    # Load config.py
-    app.config.from_pyfile('config.py')
-
     # Set Discord webhook URLs
-    discord_webhook.url = app.config.get('DISCORD_WEBHOOKS')
+    discord_webhook.url = application_config.discord_webhooks
 
     # Set discord webhook timeout
-    discord_webhook.timeout = app.config.get('DISCORD_WEBHOOK_TIMEOUT')
+    discord_webhook.timeout = application_config.discord_webhook_timeout
 
     # Add unsupported mimetypes to mimetypes module
     add_unsupported_mimetypes()
