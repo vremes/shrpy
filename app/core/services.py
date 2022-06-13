@@ -1,4 +1,5 @@
 # standard library imports
+from pathlib import Path
 from http import HTTPStatus
 from hmac import compare_digest
 
@@ -8,37 +9,43 @@ from flask import (
     current_app, abort, url_for, 
     send_from_directory, redirect
 )
+from werkzeug.security import safe_join
 
 # local imports
 from app import discord_webhook
-from app.core.main import File, ShortUrl
+from app.core.main import ShortUrl, UploadedFile
 from app.core.discord import ShortUrlEmbed, FileEmbed
 from app.core.utils import create_hmac_hash
 
 class FileService:
     @staticmethod
     def create() -> Response:
-        uploaded_file = request.files.get('file')
+        f = request.files.get('file')
 
-        if uploaded_file is None:
+        if f is None:
             abort(HTTPStatus.BAD_REQUEST, 'Invalid file.')
 
+        use_original_filename = request.headers.get('X-Use-Original-Filename', type=int) == 1
+
         # Uploaded file
-        f = File(uploaded_file)
-        f.use_original_filename = request.headers.get('X-Use-Original-Filename', type=int) == 1
+        uploaded_file = UploadedFile.from_file_storage_instance(f, use_original_filename)
 
         # Check if file is allowed
-        if f.is_allowed() is False:
+        if uploaded_file.is_allowed() is False:
             abort(HTTPStatus.UNPROCESSABLE_ENTITY, 'Invalid file type.')
 
         # Save the file
-        f.save()
+        path = Path(current_app.config['UPLOAD_DIR'])
+        path.mkdir(exist_ok=True)
 
-        hmac_hash = create_hmac_hash(f.filename, current_app.secret_key)
-        file_url = url_for('main.uploads', filename=f.filename, _external=True)
-        deletion_url = url_for('api.delete_file', hmac_hash=hmac_hash, filename=f.filename, _external=True)
+        save_path = safe_join(path, uploaded_file.full_filename)
+        f.save(save_path)
 
-        current_app.logger.info(f'Saved file: {f.filename}, URL: {file_url}, deletion URL: {deletion_url}')
+        hmac_hash = uploaded_file.generate_filename_hmac(current_app.secret_key)
+        file_url = url_for('main.uploads', filename=uploaded_file.full_filename, _external=True)
+        deletion_url = url_for('api.delete_file', hmac_hash=hmac_hash, filename=uploaded_file.full_filename, _external=True)
+
+        current_app.logger.info(f'Saved file: {uploaded_file.full_filename}, URL: {file_url}, deletion URL: {deletion_url}')
 
         # Send data to Discord webhook
         if discord_webhook.is_enabled:
@@ -60,10 +67,10 @@ class FileService:
         if compare_digest(hmac_hash, new_hmac_hash) is False:
             abort(HTTPStatus.NOT_FOUND)
 
-        if File.delete(filename) is False:
+        if UploadedFile.delete(filename) is False:
             abort(HTTPStatus.GONE)
 
-        current_app.logger.info(f'Deleted file {filename}')
+        current_app.logger.info(f'Deleted a file {filename}')
 
         return jsonify(message='This file has been deleted, you can now close this page.')
     
@@ -101,15 +108,16 @@ class ShortUrlService:
         if url is None:
             abort(HTTPStatus.BAD_REQUEST, 'Invalid URL, missing url parameter in request body.')
 
-        short_url = ShortUrl(url)
+        short_url = ShortUrl.from_url(url)
 
         if short_url.is_valid() is False:
             abort(HTTPStatus.UNPROCESSABLE_ENTITY, 'Invalid URL.')
 
         # Add URL to database
-        short_url.add()
+        short_url.save_to_database()
 
-        hmac_hash = create_hmac_hash(short_url.token, current_app.secret_key)
+        hmac_hash = short_url.generate_token_hmac(current_app.secret_key)
+
         shortened_url = url_for('main.short_url', token=short_url.token, _external=True)
         deletion_url = url_for('api.delete_short_url', hmac_hash=hmac_hash, token=short_url.token, _external=True)
 
@@ -134,7 +142,7 @@ class ShortUrlService:
         if compare_digest(hmac_hash, new_hmac_hash) is False:
             abort(HTTPStatus.NOT_FOUND)
 
-        if ShortUrl.delete(token) is False:
+        if ShortUrl.delete_by_token(token) is False:
             abort(HTTPStatus.GONE)
 
         return jsonify(message='This short URL has been deleted, you can now close this page.')
