@@ -21,21 +21,6 @@ class UploadedFile:
     """Represents uploaded file."""
     filename: str
     extension: str
-    data: bytes
-
-    def save_to_file(self) -> bool:
-        """Saves the instance to a file."""
-        path = Path(config.UPLOAD_DIR)
-
-        if path.exists() is False:
-            path.mkdir()
-
-        save_path = safe_join(path, self.full_filename)
-
-        with open(save_path, 'wb+') as f:
-            f.write(self.data)
-
-        return True
 
     def is_allowed(self) -> bool:
         """Check if file is allowed, based on `config.ALLOWED_EXTENSIONS`."""
@@ -67,18 +52,22 @@ class UploadedFile:
         return True
 
     @classmethod
-    def from_file_storage_instance(cls, file_storage_instance: FileStorage):
+    def from_file_storage_instance(cls, file_storage_instance: FileStorage, use_original_filename: bool):
         """Builds FileData instance from werkzeug.datastructures.FileStorage instance."""
-        filename = PurePath(secure_filename(file_storage_instance.filename)).stem
+        filename = token_urlsafe(config.FILE_TOKEN_BYTES)
+
+        if use_original_filename:
+            original_filename_safe = PurePath(secure_filename(file_storage_instance.filename)).stem
+            original_filename_shortened = original_filename_safe[:config.ORIGINAL_FILENAME_LENGTH]
+            filename = f'{filename}-{original_filename_shortened}'
 
         file_bytes = file_storage_instance.read(config.MAGIC_BUFFER_BYTES)
+        file_storage_instance.seek(SEEK_SET)
+
         mime = from_buffer(file_bytes, mime=True).lower()
         extension = guess_extension(mime)
 
-        file_storage_instance.seek(SEEK_SET)
-        file_bytes = file_storage_instance.read()
-
-        return cls(filename, extension, file_bytes)
+        return cls(filename, extension)
 
 @dataclass(frozen=True)
 class ShortUrl:

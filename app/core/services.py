@@ -1,4 +1,5 @@
 # standard library imports
+from pathlib import Path
 from http import HTTPStatus
 from hmac import compare_digest
 
@@ -8,6 +9,7 @@ from flask import (
     current_app, abort, url_for, 
     send_from_directory, redirect
 )
+from werkzeug.security import safe_join
 
 # local imports
 from app import discord_webhook
@@ -23,15 +25,21 @@ class FileService:
         if f is None:
             abort(HTTPStatus.BAD_REQUEST, 'Invalid file.')
 
+        use_original_filename = request.headers.get('X-Use-Original-Filename', type=int) == 1
+
         # Uploaded file
-        uploaded_file = UploadedFile.from_file_storage_instance(f)
+        uploaded_file = UploadedFile.from_file_storage_instance(f, use_original_filename)
 
         # Check if file is allowed
         if uploaded_file.is_allowed() is False:
             abort(HTTPStatus.UNPROCESSABLE_ENTITY, 'Invalid file type.')
 
         # Save the file
-        uploaded_file.save_to_file()
+        path = Path(current_app.config['UPLOAD_DIR'])
+        path.mkdir(exist_ok=True)
+
+        save_path = safe_join(path, uploaded_file.full_filename)
+        f.save(save_path)
 
         hmac_hash = uploaded_file.generate_filename_hmac(current_app.secret_key)
         file_url = url_for('main.uploads', filename=uploaded_file.full_filename, _external=True)
