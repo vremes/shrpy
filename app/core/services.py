@@ -14,7 +14,7 @@ from werkzeug.security import safe_join
 # local imports
 from app.core.utils import create_hmac_hash
 from app.core.main import ShortUrl, UploadedFile
-from app.core.discord import ShortUrlEmbed, FileEmbed
+from app.core.discord import create_short_url_embed, create_uploaded_file_embed
 from app import discord_webhook, uploaded_file_config, short_url_config, application_config
 
 class FileService:
@@ -40,6 +40,7 @@ class FileService:
         f.save(save_path)
 
         hmac_hash = uploaded_file.generate_filename_hmac(application_config.secret_key)
+
         file_url = url_for('main.uploads', filename=uploaded_file.full_filename, _external=True)
         deletion_url = url_for('api.delete_file', hmac_hash=hmac_hash, filename=uploaded_file.full_filename, _external=True)
 
@@ -47,10 +48,8 @@ class FileService:
 
         # Send data to Discord webhook
         if discord_webhook.is_enabled:
-            discord_webhook.add_embed(
-                EmbedService.get_file_embed(file_url, deletion_url)
-            )
-            discord_webhook.execute()
+            embed = create_uploaded_file_embed(file_url, deletion_url)
+            discord_webhook.send_embed(embed)
 
         # Return JSON
         return jsonify(url=file_url, delete_url=deletion_url)
@@ -88,7 +87,6 @@ class FileService:
             "DeletionURL": "$json:delete_url$",
             "Headers": {
                 "Authorization": "YOUR-UPLOAD-PASSWORD-HERE",
-                "X-Use-Original-Filename": 1,
             },
             "ErrorMessage": "$json:status$"
         }
@@ -124,10 +122,8 @@ class ShortUrlService:
 
         # Send data to Discord webhook
         if discord_webhook.is_enabled:
-            discord_webhook.add_embed(
-                EmbedService.get_shorturl_embed(short_url.url, shortened_url, deletion_url)
-            )
-            discord_webhook.execute()
+            embed = create_short_url_embed(short_url.url, shortened_url, deletion_url)
+            discord_webhook.send_embed(embed)
 
         return jsonify(url=shortened_url)
 
@@ -175,22 +171,3 @@ class ShortUrlService:
             abort(HTTPStatus.NOT_FOUND)
 
         return redirect(short_url)
-
-class EmbedService:
-    @staticmethod
-    def get_file_embed(url: str, deletion_url: str) -> FileEmbed:
-        """Returns FileEmbed instance."""
-        return FileEmbed(
-            content_url=url, 
-            deletion_url=deletion_url
-        )
-
-    @staticmethod
-    def get_shorturl_embed(url: str, short_urL: str, deletion_url: str) -> ShortUrlEmbed:
-        """Returns ShorturlEmbed instance."""
-        return ShortUrlEmbed(
-            original_url=url,
-            content_url=short_urL,
-            shortened_url=short_urL,
-            deletion_url=deletion_url
-        )
