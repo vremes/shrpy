@@ -3,7 +3,7 @@ from flask import Flask
 from werkzeug.exceptions import HTTPException
 
 # local imports
-from app.config import ApplicationConfig, UploadedFileConfig, ShortUrlConfig
+from app.config import ApplicationConfig, UploaderConfig
 from app.core.discord import CustomDiscordWebhook
 from app.core.utils import (
     http_error_handler,
@@ -16,8 +16,7 @@ discord_webhook = CustomDiscordWebhook()
 
 # Configs
 application_config = ApplicationConfig.from_environment_variables()
-uploaded_file_config = UploadedFileConfig.from_environment_variables()
-short_url_config = ShortUrlConfig.from_environment_variables()
+uploader_config = UploaderConfig.from_environment_variables()
 
 def create_app():
     app = Flask(__name__)

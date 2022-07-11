@@ -15,7 +15,7 @@ from werkzeug.security import safe_join
 from app.core.utils import create_hmac_hash
 from app.core.main import ShortUrl, UploadedFile
 from app.core.discord import create_short_url_embed, create_uploaded_file_embed
-from app import discord_webhook, uploaded_file_config, short_url_config, application_config
+from app import discord_webhook, uploader_config, application_config
 
 class FileService:
     @staticmethod
@@ -26,14 +26,14 @@ class FileService:
             abort(HTTPStatus.BAD_REQUEST, 'Invalid file.')
 
         # Uploaded file
-        uploaded_file = UploadedFile.from_file_storage_instance(f, uploaded_file_config)
+        uploaded_file = UploadedFile.from_file_storage_instance(f, uploader_config)
 
         # Check if file is allowed
         if uploaded_file.is_allowed() is False:
             abort(HTTPStatus.UNPROCESSABLE_ENTITY, 'Invalid file type.')
 
         # Save the file
-        path = Path(uploaded_file_config.upload_directory)
+        path = Path(uploader_config.upload_directory)
         path.mkdir(exist_ok=True)
 
         save_path = safe_join(path, uploaded_file.full_filename)
@@ -64,7 +64,7 @@ class FileService:
         if compare_digest(hmac_hash, new_hmac_hash) is False:
             abort(HTTPStatus.NOT_FOUND)
 
-        file_path = safe_join(uploaded_file_config.upload_directory, filename)
+        file_path = safe_join(uploader_config.upload_directory, filename)
 
         if UploadedFile.delete(file_path) is False:
             abort(HTTPStatus.GONE)
@@ -105,7 +105,7 @@ class ShortUrlService:
         if url is None:
             abort(HTTPStatus.BAD_REQUEST, 'Invalid URL, missing url parameter in request body.')
 
-        short_url = ShortUrl.from_url(url, short_url_config)
+        short_url = ShortUrl.from_url(url, uploader_config)
 
         if short_url.is_valid() is False:
             abort(HTTPStatus.UNPROCESSABLE_ENTITY, 'Invalid URL.')

@@ -46,7 +46,7 @@ def auth_required(f):
 
 def add_unsupported_mimetypes():
     """Adds unsupported mimetypes/extensions to `mimetypes` module."""
-    for mime, ext in app.uploaded_file_config.custom_extensions.items():
+    for mime, ext in app.uploader_config.custom_extensions.items():
         mime = mime.lower().strip()
         ext = f'.{ext.lower().strip()}'
         add_type(mime, ext)
