@@ -14,7 +14,7 @@ from werkzeug.utils import secure_filename
 
 # local imports
 from app import db
-from app.config import UploadedFileConfig, ShortUrlConfig
+from app.config import UploaderConfig
 from app.core.utils import create_hmac_hash
 
 @dataclass(frozen=True)
@@ -22,7 +22,7 @@ class UploadedFile:
     """Represents uploaded file."""
     filename: str
     extension: str
-    config: UploadedFileConfig
+    config: UploaderConfig
 
     def is_allowed(self) -> bool:
         """Check if file is allowed, based on `config.allowed_extensions`."""
@@ -53,7 +53,7 @@ class UploadedFile:
         return True
 
     @classmethod
-    def from_file_storage_instance(cls, file_storage_instance: FileStorage, config: UploadedFileConfig):
+    def from_file_storage_instance(cls, file_storage_instance: FileStorage, config: UploaderConfig):
         """Builds FileData instance from werkzeug.datastructures.FileStorage instance."""
         filename = token_urlsafe(config.file_token_bytes)
 
@@ -107,7 +107,7 @@ class ShortUrl:
         return execute.rowcount > 0
 
     @classmethod
-    def from_url(cls, url: str, config: ShortUrlConfig):
+    def from_url(cls, url: str, config: UploaderConfig):
         """Creates ShortUrl instance from given URL."""
         token = token_urlsafe(config.url_token_bytes)
 

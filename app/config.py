@@ -37,8 +37,8 @@ class ApplicationConfig:
         return cls(upload_password, discord_webhooks, discord_webhook_timeout, secret_key, logger)
 
 @dataclass(frozen=True)
-class UploadedFileConfig:
-    """Represents a configuration for UploadedFile."""
+class UploaderConfig:
+    """Represents a configuration for file uploads and short URLs."""
 
     # Directory for file uploads
     upload_directory: str
@@ -61,6 +61,9 @@ class UploadedFileConfig:
     # Amount of bytes for magic
     magic_buffer_bytes: int
 
+    # Amount of bytes for URL generation
+    url_token_bytes: int
+
     @classmethod
     def from_environment_variables(cls):
         env = Env()
@@ -73,6 +76,7 @@ class UploadedFileConfig:
         use_original_filename = env.bool('USE_ORIGINAL_FILENAME')
         file_token_bytes = env.int('FILE_TOKEN_BYTES')
         magic_buffer_bytes = env.int('MAGIC_BUFFER_BYTES')
+        url_token_bytes = env.int('URL_TOKEN_BYTES')
 
         return cls(
             upload_directory,
@@ -81,21 +85,6 @@ class UploadedFileConfig:
             original_filename_length,
             use_original_filename,
             file_token_bytes,
-            magic_buffer_bytes
+            magic_buffer_bytes,
+            url_token_bytes
         )
-
-@dataclass(frozen=True)
-class ShortUrlConfig:
-    """Represents a configuration for ShortUrl."""
-
-    # Amount of bytes for URL generation
-    url_token_bytes: int
-
-    @classmethod
-    def from_environment_variables(cls):
-        env = Env()
-        env.read_env(override=True)
-
-        url_token_bytes = env.int('URL_TOKEN_BYTES')
-
-        return cls(url_token_bytes)
