@@ -22,14 +22,13 @@ class UploadedFile:
     """Represents uploaded file."""
     filename: str
     extension: str
-    config: UploaderConfig
 
-    def is_allowed(self) -> bool:
-        """Check if file is allowed, based on `config.allowed_extensions`."""
+    def is_allowed(self, allowed_extensions: list) -> bool:
+        """Check if file is allowed, based on `allowed_extensions`."""
         if not self.extension:
             return False
         ext_without_dot = self.extension.replace('.', '')
-        return ext_without_dot in self.config.allowed_extensions
+        return ext_without_dot in allowed_extensions
 
     def generate_filename_hmac(self, secret: str) -> str:
         """Generates HMAC from filename and extension."""
@@ -68,7 +67,7 @@ class UploadedFile:
         mime = from_buffer(file_bytes, mime=True).lower()
         extension = guess_extension(mime)
 
-        return cls(filename, extension, config)
+        return cls(filename, extension)
 
 @dataclass(frozen=True)
 class ShortUrl:
