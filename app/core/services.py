@@ -29,7 +29,7 @@ class FileService:
         uploaded_file = UploadedFile.from_file_storage_instance(f, uploader_config)
 
         # Check if file is allowed
-        if uploaded_file.is_allowed() is False:
+        if uploaded_file.is_allowed(uploader_config.allowed_extensions) is False:
             abort(HTTPStatus.UNPROCESSABLE_ENTITY, 'Invalid file type.')
 
         # Save the file
@@ -95,7 +95,7 @@ class FileService:
     @staticmethod
     def get_by_filename() -> Response:
         filename = request.view_args.get('filename')
-        return send_from_directory(uploaded_file_config.upload_directory, filename)
+        return send_from_directory(uploader_config.upload_directory, filename)
 
 class ShortUrlService:
     @staticmethod
