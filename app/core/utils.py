@@ -33,20 +33,20 @@ def http_error_handler(exception: HTTPException, **kwargs) -> Response:
     return response
 
 def auth_required(f):
-    """Check HTTP `Authorization` header against the value of `application_config.upload_password`, calls `flask.abort` if the password does not match."""
+    """Check HTTP `Authorization` header against the value of `app.config.upload.password`, calls `flask.abort` if the password does not match."""
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if app.application_config.upload_password:
+        if app.config.upload.password:
             # Default to empty string if Authorization header is not sent
             authorization_header = request.headers.get('Authorization', default='')
-            if not compare_digest(app.application_config.upload_password, authorization_header):
+            if not compare_digest(app.config.upload.password, authorization_header):
                 abort(HTTPStatus.UNAUTHORIZED)
         return f(*args, **kwargs)
     return decorated_function
 
 def add_unsupported_mimetypes():
     """Adds unsupported mimetypes/extensions to `mimetypes` module."""
-    for mime, ext in app.uploader_config.custom_extensions.items():
+    for mime, ext in app.config.upload.custom_extensions.items():
         mime = mime.lower().strip()
         ext = f'.{ext.lower().strip()}'
         add_type(mime, ext)
@@ -63,7 +63,6 @@ def create_stdout_logger() -> logging.Logger:
     logger.setLevel(logging.INFO)
 
     return logger
-
 
 def create_hmac_hash(hmac_payload: str, hmac_secret_key: str) -> str:
     """Returns sha256 HMAC hexdigest."""

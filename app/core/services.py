@@ -15,7 +15,7 @@ from werkzeug.security import safe_join
 from app.core.utils import create_hmac_hash
 from app.core.main import ShortUrl, UploadedFile
 from app.core.discord import create_short_url_embed, create_uploaded_file_embed
-from app import discord_webhook, uploader_config, application_config
+from app import discord_webhook, config, logger
 
 class FileService:
     @staticmethod
@@ -26,25 +26,25 @@ class FileService:
             abort(HTTPStatus.BAD_REQUEST, 'Invalid file.')
 
         # Uploaded file
-        uploaded_file = UploadedFile.from_file_storage_instance(f, uploader_config)
+        uploaded_file = UploadedFile.from_file_storage_instance(f, config.upload)
 
         # Check if file is allowed
-        if uploaded_file.is_allowed(uploader_config.allowed_extensions) is False:
+        if uploaded_file.is_allowed(config.upload.allowed_extensions) is False:
             abort(HTTPStatus.UNPROCESSABLE_ENTITY, 'Invalid file type.')
 
         # Save the file
-        path = Path(uploader_config.upload_directory)
+        path = Path(config.upload.directory)
         path.mkdir(exist_ok=True)
 
         save_path = safe_join(path, uploaded_file.full_filename)
         f.save(save_path)
 
-        hmac_hash = uploaded_file.generate_filename_hmac(application_config.secret_key)
+        hmac_hash = uploaded_file.generate_filename_hmac(config.application.secret_key)
 
         file_url = url_for('main.uploads', filename=uploaded_file.full_filename, _external=True)
         deletion_url = url_for('api.delete_file', hmac_hash=hmac_hash, filename=uploaded_file.full_filename, _external=True)
 
-        application_config.logger.info(f'Saved file: {uploaded_file.full_filename}, URL: {file_url}, deletion URL: {deletion_url}')
+        logger.info(f'Saved file: {uploaded_file.full_filename}, URL: {file_url}, deletion URL: {deletion_url}')
 
         # Send data to Discord webhook
         if discord_webhook.is_enabled:
@@ -58,18 +58,18 @@ class FileService:
     def delete() -> Response:
         filename = request.view_args.get('filename')
         hmac_hash = request.view_args.get('hmac_hash')
-        new_hmac_hash = create_hmac_hash(filename, application_config.secret_key)
+        new_hmac_hash = create_hmac_hash(filename, config.application.secret_key)
 
         # If digest is invalid
         if compare_digest(hmac_hash, new_hmac_hash) is False:
             abort(HTTPStatus.NOT_FOUND)
 
-        file_path = safe_join(uploader_config.upload_directory, filename)
+        file_path = safe_join(config.upload.directory, filename)
 
         if UploadedFile.delete(file_path) is False:
             abort(HTTPStatus.GONE)
 
-        application_config.logger.info(f'Deleted a file {filename}')
+        logger.info(f'Deleted a file {filename}')
 
         return jsonify(message='This file has been deleted, you can now close this page.')
     
@@ -95,7 +95,7 @@ class FileService:
     @staticmethod
     def get_by_filename() -> Response:
         filename = request.view_args.get('filename')
-        return send_from_directory(uploader_config.upload_directory, filename)
+        return send_from_directory(config.upload.directory, filename)
 
 class ShortUrlService:
     @staticmethod
@@ -105,7 +105,7 @@ class ShortUrlService:
         if url is None:
             abort(HTTPStatus.BAD_REQUEST, 'Invalid URL, missing url parameter in request body.')
 
-        short_url = ShortUrl.from_url(url, uploader_config)
+        short_url = ShortUrl.from_url(url, config.upload)
 
         if short_url.is_valid() is False:
             abort(HTTPStatus.UNPROCESSABLE_ENTITY, 'Invalid URL.')
@@ -113,12 +113,12 @@ class ShortUrlService:
         # Add URL to database
         short_url.save_to_database()
 
-        hmac_hash = short_url.generate_token_hmac(application_config.secret_key)
+        hmac_hash = short_url.generate_token_hmac(config.application.secret_key)
 
         shortened_url = url_for('main.short_url', token=short_url.token, _external=True)
         deletion_url = url_for('api.delete_short_url', hmac_hash=hmac_hash, token=short_url.token, _external=True)
 
-        application_config.logger.info(f'Saved short URL: {shortened_url} for {short_url.url}, deletion URL: {deletion_url}')
+        logger.info(f'Saved short URL: {shortened_url} for {short_url.url}, deletion URL: {deletion_url}')
 
         # Send data to Discord webhook
         if discord_webhook.is_enabled:
@@ -131,7 +131,7 @@ class ShortUrlService:
     def delete() -> Response:
         token = request.view_args.get('token')
         hmac_hash = request.view_args.get('hmac_hash')
-        new_hmac_hash = create_hmac_hash(token, application_config.secret_key)
+        new_hmac_hash = create_hmac_hash(token, config.application.secret_key)
 
         # If digest is invalid
         if compare_digest(hmac_hash, new_hmac_hash) is False:

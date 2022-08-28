@@ -2,14 +2,10 @@ import logging
 from environs import Env
 from pathlib import Path
 from dataclasses import dataclass
-from app.core.utils import create_stdout_logger
 
 @dataclass(frozen=True)
 class ApplicationConfig:
     """Represents a configuration for the web application."""
-
-    # Password for file uploads and URL shortening
-    upload_password: str
 
     # A list of discord webhook URLs
     discord_webhooks: list
@@ -20,28 +16,22 @@ class ApplicationConfig:
     # Secret key for the application
     secret_key: str
 
-    # Logger from logging module
-    logger: logging.Logger
-
     @classmethod
-    def from_environment_variables(cls):
-        env = Env()
-        env.read_env(override=True)
-
-        upload_password = env.str('UPLOAD_PASSWORD')
+    def from_env(cls, env: Env):
         discord_webhooks = env.list('DISCORD_WEBHOOKS', delimiter=';')
         discord_webhook_timeout = env.int('DISCORD_WEBHOOK_TIMEOUT')
         secret_key = env.str('FLASK_SECRET')
-        logger = create_stdout_logger()
-
-        return cls(upload_password, discord_webhooks, discord_webhook_timeout, secret_key, logger)
+        return cls(discord_webhooks, discord_webhook_timeout, secret_key)
 
 @dataclass(frozen=True)
-class UploaderConfig:
+class UploadConfig:
     """Represents a configuration for file uploads and short URLs."""
 
+    # Password for file uploads and URL shortening
+    password: str
+
     # Directory for file uploads
-    upload_directory: str
+    directory: str
 
     # A list of allowed file extensions
     allowed_extensions: list
@@ -65,11 +55,9 @@ class UploaderConfig:
     url_token_bytes: int
 
     @classmethod
-    def from_environment_variables(cls):
-        env = Env()
-        env.read_env(override=True)
-
-        upload_directory = env.path('UPLOAD_DIR', f'{Path.cwd()}/app/uploads')
+    def from_env(cls, env: Env):
+        password = env.str('UPLOAD_PASSWORD')
+        directory = env.path('UPLOAD_DIR', f'{Path.cwd()}/app/uploads')
         allowed_extensions = env.list('ALLOWED_EXTENSIONS', delimiter=';')
         custom_extensions = env.dict('CUSTOM_EXTENSIONS')
         original_filename_length = env.int('ORIGINAL_FILENAME_LENGTH')
@@ -79,7 +67,8 @@ class UploaderConfig:
         url_token_bytes = env.int('URL_TOKEN_BYTES')
 
         return cls(
-            upload_directory,
+            password,
+            directory,
             allowed_extensions,
             custom_extensions,
             original_filename_length,
@@ -88,3 +77,17 @@ class UploaderConfig:
             magic_buffer_bytes,
             url_token_bytes
         )
+
+@dataclass(frozen=True)
+class Config:
+    application: ApplicationConfig
+    upload: UploadConfig
+
+    @classmethod
+    def from_env(cls):
+        env = Env()
+        env.read_env(override=True)
+
+        application_config = ApplicationConfig.from_env(env)
+        upload_config = UploadConfig.from_env(env)
+        return cls(application_config, upload_config)
