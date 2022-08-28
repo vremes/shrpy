@@ -1,4 +1,3 @@
-import logging
 from environs import Env
 from pathlib import Path
 from dataclasses import dataclass
