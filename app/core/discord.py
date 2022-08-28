@@ -27,7 +27,7 @@ class CustomDiscordWebhook(DiscordWebhook):
         try:
             return self.execute(True, True)
         except Timeout as err:
-            app.application_config.logger.error(f'requests.exceptions.Timeout exception has occurred during webhook execution: {err}')
+            app.logger.error(f'requests.exceptions.Timeout exception has occurred during webhook execution: {err}')
 
 def create_uploaded_file_embed(url: str, deletion_url: str) -> DiscordEmbed:
     """Creates an instance of DiscordEmbed for uploaded files."""

@@ -3,29 +3,28 @@ from flask import Flask
 from werkzeug.exceptions import HTTPException
 
 # local imports
-from app.config import ApplicationConfig, UploaderConfig
+from app.config import Config
 from app.core.discord import CustomDiscordWebhook
 from app.core.utils import (
+    create_stdout_logger,
     http_error_handler,
     add_unsupported_mimetypes,
     setup_db
 )
 
 db = setup_db()
+logger = create_stdout_logger()
+config = Config.from_env()
 discord_webhook = CustomDiscordWebhook()
-
-# Configs
-application_config = ApplicationConfig.from_environment_variables()
-uploader_config = UploaderConfig.from_environment_variables()
 
 def create_app():
     app = Flask(__name__)
 
     # Set Discord webhook URLs
-    discord_webhook.url = application_config.discord_webhooks
+    discord_webhook.url = config.application.discord_webhooks
 
     # Set discord webhook timeout
-    discord_webhook.timeout = application_config.discord_webhook_timeout
+    discord_webhook.timeout = config.application.discord_webhook_timeout
 
     # Add unsupported mimetypes to mimetypes module
     add_unsupported_mimetypes()
