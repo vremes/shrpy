@@ -65,7 +65,7 @@ nano .env
     ```sh
     python -c "from secrets import token_urlsafe; print(token_urlsafe(64))"
     ```
-6. Configure Supervisor to run Gunicorn, see [Gunicorn Configuration Overview](https://docs.gunicorn.org/en/stable/configure.html) for additional information
+6. Configure Supervisor to run Gunicorn, see [Gunicorn Documentation](https://docs.gunicorn.org/en/stable/index.html) for additional information
 ```sh
 nano /etc/supervisor/conf.d/shrpy.conf
 ```
