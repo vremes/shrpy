@@ -7,6 +7,7 @@ from http import HTTPStatus
 from mimetypes import add_type
 from hmac import compare_digest, new
 from sqlite3 import Row, connect
+from pathlib import Path
 
 # pip imports
 from werkzeug.exceptions import HTTPException
@@ -86,3 +87,11 @@ def setup_db():
     cursor.execute("CREATE TABLE IF NOT EXISTS urls (token VARCHAR(10) NOT NULL PRIMARY KEY, url TEXT NOT NULL)")
 
     return cursor
+
+def create_directory(directory: str) -> None:
+    """Creates a given directory."""
+    return Path(directory).mkdir(exist_ok=True)
+
+def safe_str_comparison(a: str, b: str) -> bool:
+    """Performs safe string comparison."""
+    return compare_digest(a, b)
