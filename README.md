@@ -29,7 +29,7 @@ pip3 install -r requirements.txt
 cp .env_template .env
 nano .env
 ```
-    - You **must** set `FLASK_SECRET` to something, good way to generate secrets is the following command:
+  - You **must** set `FLASK_SECRET` to something, good way to generate secrets is the following command
     ```sh
     python -c "from secrets import token_urlsafe; print(token_urlsafe(64))"
     ```
@@ -61,7 +61,7 @@ pip3 install -r requirements.txt
 cp .env_template .env
 nano .env
 ```
-    - You **must** set `FLASK_SECRET` to something, good way to generate secrets is the following command:
+  - You **must** set `FLASK_SECRET` to something, good way to generate secrets is the following command
     ```sh
     python -c "from secrets import token_urlsafe; print(token_urlsafe(64))"
     ```
@@ -69,7 +69,7 @@ nano .env
 ```sh
 nano /etc/supervisor/conf.d/shrpy.conf
 ```
-    - Example configuration:
+  - Example configuration:
     ```
     [program:shrpy]
     directory=/var/www/shrpy
@@ -84,7 +84,7 @@ nano /etc/supervisor/conf.d/shrpy.conf
 supervisorctl update
 nano /etc/nginx/sites-available/shrpy.conf
 ```
-    - Example configuration:
+  - Example configuration:
     ```nginx
     server {
         listen 80;
