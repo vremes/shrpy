@@ -10,59 +10,106 @@ ShareX URL shortening config is available at `/api/sharex/shorten`.
 
 ShareX upload config is available at `/api/sharex/upload`.
 
-# Setup (NGINX, Gunicorn, Supervisor)
+# Setup
 
-**To run Flask development server use `python3 wsgi.py`, the steps below are for production deployment.**
+Below you'll find two examples on how to setup this application.
 
-1. Install NGINX and Supervisor:  
-`apt install nginx supervisor`
-3. Install Gunicorn and Gevent:  
-`pip3 install gunicorn gevent`
-4. Clone the repository:  
-`git clone https://github.com/vremes/shrpy.git /var/www/shrpy/`
-6. Install requirements:  
-`pip3 install -r /var/www/shrpy/requirements.txt`
-7. Setup environment variables:  
-`cd /var/www/shrpy/`  
-`cp .env_template .env`  
-`nano .env` and uncomment `FLASK_SECRET` and set its value to a secret string, e.g. `FLASK_SECRET = "XYZ"`  
-9. Configure supervisor to run gunicorn:  
-`nano /etc/supervisor/conf.d/shrpy.conf`
+### Development
+1. Clone the repository
+```sh
+git clone https://github.com/vremes/shrpy.git
 ```
-[program:shrpy]
-directory=/var/www/shrpy
-command=gunicorn --bind=127.0.0.1:8000 --worker-class=gevent wsgi:application
-autostart=true
-autorestart=true
-stderr_logfile=/var/log/shrpy.err.log
-stdout_logfile=/var/log/shrpy.out.log
+2. Move to cloned repository directory and install requirements
+```sh
+cd shrpy
+pip3 install -r requirements.txt
 ```
-7. Update supervisor and configure NGINX:  
-`supervisorctl update`  
-`nano /etc/nginx/sites-available/shrpy.conf`  
-```nginx
-server {
-    listen 80;
-    server_name example.com; # <==== Change to your domain name
-    client_max_body_size 16M;
+3. Setup `.env` file, see [Configuration](#configuration) for additional information
+```sh
+cp .env_template .env
+nano .env
+```
+    - You **must** set `FLASK_SECRET` to something, good way to generate secrets is the following command:
+    ```sh
+    python -c "from secrets import token_urlsafe; print(token_urlsafe(64))"
+    ```
+4. Run Flask built-in development server
+```sh
+python3 wsgi.py
+```
 
-    location / {
-        include proxy_params;
-        proxy_pass http://127.0.0.1:8000;
-    }
+### Production
+1. Install NGINX and Supervisor
+```sh
+apt install nginx supervisor
+```
+2. Install Gunicorn and Gevent
+```sh
+pip3 install gunicorn gevent
+```
+3. Clone the repository to `/var/www/`
+```sh
+git clone https://github.com/vremes/shrpy.git /var/www/shrpy
+```
+4. Move to cloned repository directory and install requirements
+```sh
+cd /var/www/shrpy/
+pip3 install -r requirements.txt
+```
+5. Setup `.env` file, see [Configuration](#configuration) for additional information
+```sh
+cp .env_template .env
+nano .env
+```
+    - You **must** set `FLASK_SECRET` to something, good way to generate secrets is the following command:
+    ```sh
+    python -c "from secrets import token_urlsafe; print(token_urlsafe(64))"
+    ```
+6. Configure Supervisor to run Gunicorn, see [Gunicorn Configuration Overview](https://docs.gunicorn.org/en/stable/configure.html) for additional information
+```sh
+nano /etc/supervisor/conf.d/shrpy.conf
+```
+    - Example configuration:
+    ```
+    [program:shrpy]
+    directory=/var/www/shrpy
+    command=gunicorn --bind=127.0.0.1:8000 --worker-class=gevent wsgi:application
+    autostart=true
+    autorestart=true
+    stderr_logfile=/var/log/shrpy.err.log
+    stdout_logfile=/var/log/shrpy.out.log
+    ```
+7. Update Supervisor configuration and configure NGINX
+```sh
+supervisorctl update
+nano /etc/nginx/sites-available/shrpy.conf
+```
+    - Example configuration:
+    ```nginx
+    server {
+        listen 80;
+        server_name example.com; # <==== Change to your domain name
+        client_max_body_size 16M;
 
-    location /uploads {
-        alias /var/www/shrpy/app/uploads/;
+        location / {
+            include proxy_params;
+            proxy_pass http://127.0.0.1:8000;
+        }
+
+        location /uploads {
+            alias /var/www/shrpy/app/uploads/;
+        }
     }
-}
- ```
-8. Enable NGINX config and restart:  
-`ln -s /etc/nginx/sites-available/shrpy.conf /etc/nginx/sites-enabled/`  
-`service nginx restart`  
-8. Visit the root (`/`) path on your domain and it should be running:
+    ```
+8. Enable NGINX configuration and restart NGINX
+```sh
+ln -s /etc/nginx/sites-available/shrpy.conf /etc/nginx/sites-enabled/
+service nginx restart
+```
+9. Visit the root (`/`) path on your domain and it should be running:
 ```json
 {
-  "message": "It works! Beep boop."
+    "message": "It works! Beep boop."
 }
 ```
 ---
