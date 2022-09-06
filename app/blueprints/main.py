@@ -1,5 +1,9 @@
-from flask import Blueprint, jsonify
-from app.core.services import ShortUrlService, FileService
+from http import HTTPStatus
+
+from flask import Blueprint, jsonify, abort, redirect, send_from_directory
+
+from app import config
+from app.core.main import ShortUrl
 
 main = Blueprint('main', __name__)
 
@@ -9,8 +13,13 @@ def index():
 
 @main.get('/uploads/<filename>')
 def uploads(filename):
-    return FileService.get_by_filename()
+    return send_from_directory(config.upload.directory, filename)
 
 @main.get('/url/<token>')
 def short_url(token):
-    return ShortUrlService.get_by_token()
+    short_url = ShortUrl.get_by_token(token)
+
+    if short_url is None:
+        abort(HTTPStatus.NOT_FOUND)
+
+    return redirect(short_url)
