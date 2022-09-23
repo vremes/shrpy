@@ -6,9 +6,19 @@
 
 I created this mostly for my personal use, but if you have any suggestions, ideas or improvements feel free to open a new issue (pull requests are also welcome).
 
-ShareX URL shortening config is available at `/api/sharex/shorten`.
+# Endpoints
 
-ShareX upload config is available at `/api/sharex/upload`.
+| Route | HTTP method | Description |
+| ----- | ------ | ------ |
+`/` | `GET` | Index page with some text just to make sure this application works. |
+`/uploads/<filename>` | `GET` | Route to serve a given file from uploads directory. |
+`/url/<token>` | `GET` | Redirects you to the URL for given short URL token. |
+`/api/sharex/upload` | `GET` | ShareX custom uploader configuration for files, you can import this to ShareX from **Destinations** -> **Custom uploader settings** -> **Import** -> **From URL** |
+`/api/sharex/shorten` | `GET` | ShareX custom uploader configuration for short URLs, you can import this to ShareX from **Destinations** -> **Custom uploader settings** -> **Import** -> **From URL** |
+`/api/upload` | `POST` | Route for file uploads. |
+`/api/shorten` | `POST` | Route for URL shortening. |
+`/api/delete-short-url/<hmac_hash>/<token>` | `GET` | ShareX deletion URL for short URLs. |
+`/api/delete-file/<hmac_hash>/<filename>` | `GET` | ShareX deletion URL for files. |
 
 # Setup
 
