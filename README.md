@@ -1,6 +1,5 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/vremes/shrpy.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/vremes/shrpy/context:python)
-[![Total alerts](https://img.shields.io/lgtm/alerts/g/vremes/shrpy.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/vremes/shrpy/alerts/)
+[![CodeQL](https://github.com/vremes/shrpy/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/vremes/shrpy/actions/workflows/codeql-analysis.yml)
 
 [ShareX](https://getsharex.com/) custom uploader/destination server written in Python (Flask).
 
