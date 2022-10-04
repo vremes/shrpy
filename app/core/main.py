@@ -8,7 +8,7 @@ from functools import cached_property
 from mimetypes import guess_extension
 
 # pip imports
-from magic import from_buffer
+from python_magic_file import MagicFile
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
@@ -61,11 +61,7 @@ class UploadedFile:
             original_filename_shortened = original_filename_safe[:config.original_filename_length]
             filename = f'{filename}-{original_filename_shortened}'
 
-        file_bytes = file_storage_instance.read(config.magic_buffer_bytes)
-        file_storage_instance.seek(SEEK_SET)
-
-        mime = from_buffer(file_bytes, mime=True).lower()
-        extension = guess_extension(mime)
+        extension = MagicFile(file_storage_instance.stream).get_extension(config.magic_buffer_bytes)
 
         return cls(filename, extension)
 
