@@ -1,4 +1,4 @@
 Flask == 2.2.2
-discord-webhook >= 0.13.0
+discord-webhook == 1.0.0
 environs == 9.5.0
 python-magic-file == 0.0.7
