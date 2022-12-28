@@ -4,14 +4,10 @@ from random import randint
 # pip imports
 from discord_webhook import DiscordWebhook, DiscordEmbed
 
-def create_discord_webhooks(urls: list, timeout: float = 5.0) -> list[DiscordWebhook]:
-    """Creates a list of CustomDiscordWebhook instances."""
-    webhooks = []
-    for url in urls:
-        if not url:
-            continue
-        webhooks.append(DiscordWebhook(url, timeout=timeout))
-    return webhooks
+def create_discord_webhooks(urls: list[str], timeout: float = 5.0) -> tuple:
+    """Creates a tuple of CustomDiscordWebhook instances."""
+    filtered_urls = [url for url in urls if url.strip()]
+    return DiscordWebhook.create_batch(filtered_urls, timeout=timeout)
 
 def create_uploaded_file_embed(url: str, deletion_url: str) -> DiscordEmbed:
     """Creates an instance of DiscordEmbed for uploaded files."""
