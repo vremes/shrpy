@@ -2,32 +2,16 @@
 from random import randint
 
 # pip imports
-from requests.exceptions import Timeout
 from discord_webhook import DiscordWebhook, DiscordEmbed
 
-# local imports
-import app
-
-class CustomDiscordWebhook(DiscordWebhook):
-    def __init__(self, url=None, **kwargs):
-        super().__init__(url, **kwargs)
-
-    @property
-    def is_enabled(self) -> bool:
-        """Checks if Discord webhook is enabled."""
-        return self.url is not None and len(self.url) > 0
-
-    def send_embed(self, embed: DiscordEmbed):
-        """Sends the given DiscordEmbed to webhook."""
-        if self.is_enabled is False:
-            return
-
-        self.add_embed(embed)
-
-        try:
-            return self.execute(True, True)
-        except Timeout as err:
-            app.logger.error(f'requests.exceptions.Timeout exception has occurred during webhook execution: {err}')
+def create_discord_webhooks(urls: list, timeout: float = 5.0) -> list[DiscordWebhook]:
+    """Creates a list of CustomDiscordWebhook instances."""
+    webhooks = []
+    for url in urls:
+        if not url:
+            continue
+        webhooks.append(DiscordWebhook(url, timeout=timeout))
+    return webhooks
 
 def create_uploaded_file_embed(url: str, deletion_url: str) -> DiscordEmbed:
     """Creates an instance of DiscordEmbed for uploaded files."""

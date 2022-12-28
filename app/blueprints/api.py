@@ -2,8 +2,9 @@ from http import HTTPStatus
 
 from flask import Blueprint, jsonify, url_for, abort, request
 from werkzeug.security import safe_join
+from requests.exceptions import Timeout
 
-from app import config, logger, discord_webhook
+from app import config, logger, discord_webhooks
 from app.core.main import UploadedFile, ShortUrl
 from app.core.discord import create_short_url_embed, create_uploaded_file_embed
 from app.core.utils import auth_required, create_directory, safe_str_comparison, create_hmac_hash
@@ -77,10 +78,14 @@ def upload():
 
     logger.info(f'Saved file: {uploaded_file.full_filename}, URL: {file_url}, deletion URL: {deletion_url}')
 
-    # Send data to Discord webhook
-    if discord_webhook.is_enabled:
+    # Send data to Discord webhooks
+    for discord_webhook in discord_webhooks:
         embed = create_uploaded_file_embed(file_url, deletion_url)
-        discord_webhook.send_embed(embed)
+        discord_webhook.add_embed(embed)
+        try:
+            discord_webhook.execute(remove_embeds=True, remove_files=True)
+        except Timeout as err:
+            logger.error(f'requests.exceptions.Timeout exception has occurred during webhook execution: {err}')
 
     # Return JSON
     return jsonify(url=file_url, delete_url=deletion_url)
@@ -108,10 +113,14 @@ def shorten():
 
     logger.info(f'Saved short URL: {shortened_url} for {short_url.url}, deletion URL: {deletion_url}')
 
-    # Send data to Discord webhook
-    if discord_webhook.is_enabled:
+    # Send data to Discord webhooks
+    for discord_webhook in discord_webhooks:
         embed = create_short_url_embed(short_url.url, shortened_url, deletion_url)
-        discord_webhook.send_embed(embed)
+        discord_webhook.add_embed(embed)
+        try:
+            discord_webhook.execute(remove_embeds=True, remove_files=True)
+        except Timeout as err:
+            logger.error(f'requests.exceptions.Timeout exception has occurred during webhook execution: {err}')
 
     return jsonify(url=shortened_url)
 

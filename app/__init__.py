@@ -4,7 +4,7 @@ from werkzeug.exceptions import HTTPException
 
 # local imports
 from app.config import Config
-from app.core.discord import CustomDiscordWebhook
+from app.core.discord import create_discord_webhooks
 from app.core.utils import (
     create_stdout_logger,
     http_error_handler,
@@ -15,16 +15,10 @@ from app.core.utils import (
 db = setup_db()
 logger = create_stdout_logger()
 config = Config.from_env()
-discord_webhook = CustomDiscordWebhook()
+discord_webhooks = create_discord_webhooks(config.application.discord_webhooks, config.application.discord_webhook_timeout)
 
 def create_app():
     app = Flask(__name__)
-
-    # Set Discord webhook URLs
-    discord_webhook.url = config.application.discord_webhooks
-
-    # Set discord webhook timeout
-    discord_webhook.timeout = config.application.discord_webhook_timeout
 
     # Add unsupported mimetypes to mimetypes module
     add_unsupported_mimetypes()
