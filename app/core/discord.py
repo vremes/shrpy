@@ -2,6 +2,7 @@
 from random import randint
 
 # pip imports
+from requests.exceptions import Timeout
 from discord_webhook import DiscordWebhook, DiscordEmbed
 
 def create_discord_webhooks(urls: list[str], timeout: float = 5.0) -> tuple:
@@ -31,3 +32,12 @@ def create_short_url_embed(original_url: str, shortened_url: str, deletion_url: 
     embed.set_color(randint(0, 0xffffff))
     embed.set_timestamp()
     return embed
+
+def execute_webhooks_with_embed(webhook_urls: list[DiscordWebhook], embed: DiscordEmbed):
+    """Executes a list of webhooks with given embed."""
+    for webhook in webhook_urls:
+        try:
+            webhook.add_embed(embed)
+            webhook.execute()
+        except Timeout:
+            break
