@@ -1,12 +1,27 @@
 from http import HTTPStatus
+from secrets import token_urlsafe
 
 from flask import Blueprint, jsonify, url_for, abort, request
 from werkzeug.security import safe_join
 
 from app import config, logger
-from app.core.main import UploadedFile, ShortUrl
-from app.core.utils import auth_required, create_directory, safe_str_comparison, create_hmac_hash
-from app.core.discord import create_short_url_embed, create_uploaded_file_embed, create_discord_webhooks, execute_webhooks_with_embed
+from app.core.utils import (
+    auth_required, safe_str_comparison,
+    create_hmac_hash
+)
+from app.core.discord import (
+    create_short_url_embed, create_uploaded_file_embed,
+    create_discord_webhooks, execute_webhooks_with_embed
+)
+from app.core.files import (
+    get_file_extension_from_file, is_file_extension_allowed, 
+    create_directory, get_secure_filename,
+    delete_file
+)
+from app.core.urls import (
+    is_valid_url, add_https_scheme_to_url,
+    save_url_and_token_to_database, delete_url_from_database_by_token
+)
 
 api = Blueprint('api', __name__)
 
@@ -55,30 +70,27 @@ def upload():
     if f is None:
         abort(HTTPStatus.BAD_REQUEST, 'Invalid file.')
 
-    # Uploaded file
-    uploaded_file = UploadedFile.from_file_storage_instance(f, config.upload)
+    file_extension = get_file_extension_from_file(f.stream, config.magic_buffer_bytes)
 
-    # Check if file is allowed
-    if uploaded_file.is_allowed(config.upload.allowed_extensions) is False:
+    if is_file_extension_allowed(file_extension, config.allowed_extensions) is False:
         abort(HTTPStatus.UNPROCESSABLE_ENTITY, 'Invalid file type.')
 
-    # Ensure upload directory exists
-    upload_directory = config.upload.directory
-    create_directory(upload_directory)
+    create_directory(config.upload.directory)
 
-    # Save the file
-    save_path = safe_join(upload_directory, uploaded_file.full_filename)
+    filename = get_secure_filename(f.filename)
+    save_filename = filename + file_extension
+    save_path = safe_join(config.upload.directory, save_filename)
+
     f.save(save_path)
 
-    hmac_hash = uploaded_file.generate_filename_hmac(config.application.secret_key)
+    hmac_hash = create_hmac_hash(save_filename, config.flask_secret)
+    file_url = url_for('main.uploads', filename=save_filename, _external=True)
+    deletion_url = url_for('api.delete_file', hmac_hash=hmac_hash, filename=save_filename, _external=True)
 
-    file_url = url_for('main.uploads', filename=uploaded_file.full_filename, _external=True)
-    deletion_url = url_for('api.delete_file', hmac_hash=hmac_hash, filename=uploaded_file.full_filename, _external=True)
-
-    logger.info(f'Saved file: {uploaded_file.full_filename}, URL: {file_url}, deletion URL: {deletion_url}')
+    logger.info(f'Saved file: {save_filename}, URL: {file_url}, deletion URL: {deletion_url}')
 
     # Send data to Discord webhooks
-    discord_webhooks = create_discord_webhooks(config.application.discord_webhooks, config.application.discord_webhook_timeout)
+    discord_webhooks = create_discord_webhooks(config.discord_webhook_urls, config.discord_webhook_timeout)
     if discord_webhooks:
         embed = create_uploaded_file_embed(file_url, deletion_url)
         execute_webhooks_with_embed(discord_webhooks, embed)
@@ -91,56 +103,56 @@ def upload():
 def shorten():
     url = request.form.get('url')
 
-    if url is None:
-        abort(HTTPStatus.BAD_REQUEST, 'Invalid URL, missing url parameter in request body.')
+    if is_valid_url(url) is False:
+        abort(HTTPStatus.BAD_REQUEST, 'Invalid URL.')
 
-    short_url = ShortUrl.from_url(url, config.upload)
+    url = add_https_scheme_to_url(url)
+    token = token_urlsafe(config.url_token_bytes)
 
-    if short_url.is_valid() is False:
-        abort(HTTPStatus.UNPROCESSABLE_ENTITY, 'Invalid URL.')
+    saved_to_database = save_url_and_token_to_database(url, token)
 
-    # Add URL to database
-    short_url.save_to_database()
+    if saved_to_database is False:
+        abort(HTTPStatus.INTERNAL_SERVER_ERROR, 'Unable to save URL to database.')
 
-    hmac_hash = short_url.generate_token_hmac(config.application.secret_key)
+    hmac_hash = create_hmac_hash(token, config.flask_secret)
+    shortened_url = url_for('main.short_url', token=token, _external=True)
+    deletion_url = url_for('api.delete_short_url', hmac_hash=hmac_hash, token=token, _external=True)
 
-    shortened_url = url_for('main.short_url', token=short_url.token, _external=True)
-    deletion_url = url_for('api.delete_short_url', hmac_hash=hmac_hash, token=short_url.token, _external=True)
-
-    logger.info(f'Saved short URL: {shortened_url} for {short_url.url}, deletion URL: {deletion_url}')
+    logger.info(f'Saved short URL: {shortened_url} for {url}, deletion URL: {deletion_url}')
 
     # Send data to Discord webhooks
-    discord_webhooks = create_discord_webhooks(config.application.discord_webhooks, config.application.discord_webhook_timeout)
+    discord_webhooks = create_discord_webhooks(config.discord_webhook_urls, config.discord_webhook_timeout)
     if discord_webhooks:
-        embed = create_short_url_embed(short_url.url, shortened_url, deletion_url)
+        embed = create_short_url_embed(url, shortened_url, deletion_url)
         execute_webhooks_with_embed(discord_webhooks, embed)
 
     return jsonify(url=shortened_url)
 
 @api.get('/delete-short-url/<hmac_hash>/<token>')
 def delete_short_url(hmac_hash, token):
-    new_hmac_hash = create_hmac_hash(token, config.application.secret_key)
+    new_hmac_hash = create_hmac_hash(token, config.flask_secret)
 
     # If digest is invalid
     if safe_str_comparison(hmac_hash, new_hmac_hash) is False:
         abort(HTTPStatus.NOT_FOUND)
 
-    if ShortUrl.delete_by_token(token) is False:
+    if delete_url_from_database_by_token(token) is False:
         abort(HTTPStatus.GONE)
 
     return jsonify(message='This short URL has been deleted, you can now close this page.')
 
 @api.get('/delete-file/<hmac_hash>/<filename>')
 def delete_file(hmac_hash, filename):
-    new_hmac_hash = create_hmac_hash(filename, config.application.secret_key)
+    new_hmac_hash = create_hmac_hash(filename, config.flask_secret)
 
     # If digest is invalid
     if safe_str_comparison(hmac_hash, new_hmac_hash) is False:
         abort(HTTPStatus.NOT_FOUND)
 
-    file_path = safe_join(config.upload.directory, filename)
+    file_path = safe_join(config.upload_directory, filename)
+    file_deleted = delete_file(file_path)
 
-    if UploadedFile.delete(file_path) is False:
+    if file_deleted is False:
         abort(HTTPStatus.GONE)
 
     logger.info(f'Deleted a file {filename}')
