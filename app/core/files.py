@@ -7,7 +7,8 @@ from python_magic_file import MagicFile
 
 def is_file_extension_allowed(file_extension: str , allowed_file_extensions: list) -> bool:
     """Returns True if given file_extension is allowed."""
-    return file_extension in allowed_file_extensions
+    extension_without_dot = file_extension.replace('.', '')
+    return extension_without_dot in allowed_file_extensions
 
 def delete_file(file_path: str) -> bool:
     """Deletes a given file if it exists."""

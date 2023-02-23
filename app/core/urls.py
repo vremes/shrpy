@@ -30,4 +30,7 @@ def delete_url_from_database_by_token(token: str) -> bool:
 def get_url_by_token(token: str) -> str | None:
     """Returns url using given token."""
     execute = db.execute("SELECT url FROM urls WHERE token = ? LIMIT 1", (token,))
-    return execute.fetchone()
+    result = execute.fetchone()
+    if result is None:
+        return None
+    return result['url']

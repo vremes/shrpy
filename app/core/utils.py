@@ -1,15 +1,15 @@
 import logging
 from sys import stdout
 from hashlib import sha256
-from functools import wraps
 from http import HTTPStatus
 from hmac import compare_digest, new
 from sqlite3 import Row, connect
+from functools import wraps, lru_cache
 
 from werkzeug.exceptions import HTTPException
 from flask import Response, jsonify, abort, request
 
-from app import config
+from app.core.config import Config
 
 def http_error_handler(exception: HTTPException, **kwargs) -> Response:
     """Error handler for `werkzeug.exceptions.HTTPException`.
@@ -28,11 +28,16 @@ def http_error_handler(exception: HTTPException, **kwargs) -> Response:
     response.status_code = exception.code
     return response
 
+@lru_cache(maxsize=1)
+def get_config() -> Config:
+    """Returns the config."""
+    return Config.from_env()
+
 def auth_required(f):
     """Check HTTP `Authorization` header against the value of `app.config.upload.password`, calls `flask.abort` if the password does not match."""
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        print(config)
+        config = get_config()
         if config.upload_password:
             # Default to empty string if Authorization header is not sent
             authorization_header = request.headers.get('Authorization', default='')
