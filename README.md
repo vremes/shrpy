@@ -137,9 +137,7 @@ You can set these environment variables in [.env_template](https://github.com/vr
 | `DISCORD_WEBHOOKS` | `str` | `None` | Discord webhook URLs separated by semicolon. |
 | `DISCORD_WEBHOOK_TIMEOUT` | `int` | `5` | Timeout for Discord webhook requests in seconds. |
 | `MAGIC_BUFFER_BYTES` | `int` | `2048` | The amount of bytes `python-magic` will read from uploaded file to determine its extension. |
-| `FILE_TOKEN_BYTES` | `int` | `12` | The amount of bytes `secrets.token_urlsafe` will use to generate filenames. |
 | `URL_TOKEN_BYTES` | `int` | `6` | The amount of bytes `secrets.token_urlsafe` will use to generate shortened URLs. |
-| `ORIGINAL_FILENAME_LENGTH` | `int` | `18` | The amount of characters which will be appended to random filename from original filename when `USE_ORIGINAL_FILENAME` value is `True`. |
 | `USE_ORIGINAL_FILENAME` | `bool` | `True` | If saved files should include original filename.
 
 ## HTTP Headers

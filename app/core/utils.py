@@ -1,20 +1,15 @@
-# standard library imports
 import logging
 from sys import stdout
 from hashlib import sha256
-from functools import wraps
 from http import HTTPStatus
-from mimetypes import add_type
 from hmac import compare_digest, new
 from sqlite3 import Row, connect
-from pathlib import Path
+from functools import wraps, lru_cache
 
-# pip imports
 from werkzeug.exceptions import HTTPException
 from flask import Response, jsonify, abort, request
 
-# local imports
-import app
+from app.core.config import Config
 
 def http_error_handler(exception: HTTPException, **kwargs) -> Response:
     """Error handler for `werkzeug.exceptions.HTTPException`.
@@ -33,24 +28,23 @@ def http_error_handler(exception: HTTPException, **kwargs) -> Response:
     response.status_code = exception.code
     return response
 
+@lru_cache(maxsize=1)
+def get_config() -> Config:
+    """Returns the config."""
+    return Config.from_env()
+
 def auth_required(f):
     """Check HTTP `Authorization` header against the value of `app.config.upload.password`, calls `flask.abort` if the password does not match."""
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if app.config.upload.password:
+        config = get_config()
+        if config.upload_password:
             # Default to empty string if Authorization header is not sent
             authorization_header = request.headers.get('Authorization', default='')
-            if not compare_digest(app.config.upload.password, authorization_header):
+            if not safe_str_comparison(config.upload_password, authorization_header):
                 abort(HTTPStatus.UNAUTHORIZED)
         return f(*args, **kwargs)
     return decorated_function
-
-def add_unsupported_mimetypes():
-    """Adds unsupported mimetypes/extensions to `mimetypes` module."""
-    for mime, ext in app.config.upload.custom_extensions.items():
-        mime = mime.lower().strip()
-        ext = f'.{ext.lower().strip()}'
-        add_type(mime, ext)
 
 def create_stdout_logger() -> logging.Logger:
     """Returns stdout logger for logging."""
@@ -87,10 +81,6 @@ def setup_db():
     cursor.execute("CREATE TABLE IF NOT EXISTS urls (token VARCHAR(10) NOT NULL PRIMARY KEY, url TEXT NOT NULL)")
 
     return cursor
-
-def create_directory(directory: str) -> None:
-    """Creates a given directory."""
-    return Path(directory).mkdir(exist_ok=True)
 
 def safe_str_comparison(a: str, b: str) -> bool:
     """Performs safe string comparison."""
