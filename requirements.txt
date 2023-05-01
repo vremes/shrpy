@@ -1,4 +1,4 @@
-Flask == 2.2.3
+Flask == 2.3.2
 discord-webhook == 1.1.0
 environs == 9.5.0
 python-magic-file == 0.0.7
